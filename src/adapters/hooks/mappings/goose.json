@@ -1,5 +1,5 @@
 {
-  "about": "Goose hooks from a plugin folder (~/.agents/plugins/confab). The event name is in \"event\"; UserPromptSubmit carries the prompt in \"message\". Goose runs hooks with sh -c, even on Windows.",
+  "about": "Goose hooks from a plugin folder (~/.agents/plugins/sanskrit_learning). The event name is in \"event\"; UserPromptSubmit carries the prompt in \"message\". Goose runs hooks with sh -c, even on Windows.",
   "agent": "goose",
   "eventField": [
     "event",
@@ -30,14 +30,14 @@
         }
       ]
     },
-    "ownDir": "~/.agents/plugins/confab",
+    "ownDir": "~/.agents/plugins/sanskrit_learning",
     "files": {
-      "~/.agents/plugins/confab/plugin.json": {
-        "name": "confab",
+      "~/.agents/plugins/sanskrit_learning/plugin.json": {
+        "name": "sanskrit_learning",
         "version": "1.0.0",
-        "description": "Confab read-aloud: reports prompts and final replies (runs adapters/hooks/adapter.cjs)."
+        "description": "SanskritLearning read-aloud: reports prompts and final replies (runs adapters/hooks/adapter.cjs)."
       },
-      "~/.agents/plugins/confab/hooks/hooks.json": {
+      "~/.agents/plugins/sanskrit_learning/hooks/hooks.json": {
         "hooks": {
           "UserPromptSubmit": [
             {

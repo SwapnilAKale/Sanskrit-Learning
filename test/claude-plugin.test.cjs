@@ -21,7 +21,7 @@ test('plugin root check needs only read-aloud files',()=>{
 });
 async function resident(t){
  const profileApi=require('../src/pc/profile.cjs');
- const dir=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'lv-hook-')),profile=path.join(dir,'Confab','resident');profileApi.initialize(profile);
+ const dir=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'lv-hook-')),profile=path.join(dir,'SanskritLearning','resident');profileApi.initialize(profile);
  const received=[];const server=http.createServer(async(req,res)=>{let body='';for await(const part of req)body+=part;received.push(JSON.parse(body));res.end('{}');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  fs.writeFileSync(path.join(profile,'endpoint.json'),JSON.stringify({port:server.address().port}));
@@ -41,7 +41,7 @@ test('Claude hooks report the turn, the final reply and the session end to the r
 });
 test('hook-launcher run as Claude runs it: forwards the prompt, prints nothing, exits 0',async t=>{
  const {dir,received}=await resident(t);
- const child=spawn(process.execPath,[path.join(PLUGIN,'hook-launcher.cjs')],{env:{...process.env,CONFAB_INSTALL_ROOT:ROOT,LOCALAPPDATA:dir},windowsHide:true});
+ const child=spawn(process.execPath,[path.join(PLUGIN,'hook-launcher.cjs')],{env:{...process.env,SANSKRIT_LEARNING_INSTALL_ROOT:ROOT,LOCALAPPDATA:dir},windowsHide:true});
  let out='';child.stdout.on('data',d=>out+=d);child.stderr.on('data',d=>out+=d);
  child.stdin.write(JSON.stringify({session_id:'s2',hook_event_name:'UserPromptSubmit',prompt:'hello'}));// stdin left open, as Codex and Claude may
  const code=await new Promise(r=>child.on('exit',r));

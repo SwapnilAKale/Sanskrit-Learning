@@ -1,5 +1,5 @@
 {
-  "about": "Continue CLI (cn) hooks, Claude Code-compatible settings. Follows the default conventions. cn also reads ~/.claude/settings.json; Confab's Claude Code hooks live in its plugin, not there.",
+  "about": "Continue CLI (cn) hooks, Claude Code-compatible settings. Follows the default conventions. cn also reads ~/.claude/settings.json; SanskritLearning's Claude Code hooks live in its plugin, not there.",
   "agent": "continue",
   "install": {
     "requires": {

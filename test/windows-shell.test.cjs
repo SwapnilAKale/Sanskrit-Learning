@@ -1,5 +1,5 @@
 'use strict';
-// Regression: Confab installed from a packaged app's terminal (the Claude desktop app) landed in that app's private
+// Regression: SanskritLearning installed from a packaged app's terminal (the Claude desktop app) landed in that app's private
 // copy of %LOCALAPPDATA%, and the service started from there belonged to the app's job object. It died when the app
 // closed, and Windows could not start it again (sign-in entry and Start menu found no launcher).
 const {test}=require('node:test'),assert=require('node:assert/strict');
@@ -18,7 +18,7 @@ test('detects when this process writes AppData into a packaged app\'s private co
  assert.equal(spawnSync('cmd.exe',['/d','/c','mklink','/J',path.join(local,'Local'),base],{windowsHide:true}).status,0,'junction created');
  t.after(()=>{try{fs.rmdirSync(path.join(local,'Local'));}catch{}});
  assert.equal(ps('Get-AppDataRedirect -Base "'+base+'"').out,'Claude_test123');
- assert.deepEqual(fs.readdirSync(base).filter(n=>n.startsWith('confab-probe-')),[],'the probe file is removed');
+ assert.deepEqual(fs.readdirSync(base).filter(n=>n.startsWith('sanskrit_learning-probe-')),[],'the probe file is removed');
 });
 
 test('a program started through the shell belongs to the desktop, not to the caller',{skip:win},async()=>{
@@ -42,15 +42,15 @@ test('setup, uninstall and the service start use the shell helpers',()=>{
 });
 
 test('launchers from earlier runs are cleaned up, the running one is kept; setup and uninstall both clean',{skip:win},()=>{
- const dir=scratch('launchers'),own=path.join(dir,'confab-setup-own.cmd'),stale=path.join(dir,'confab-setup-old.cmd'),other=path.join(dir,'unrelated.cmd');
+ const dir=scratch('launchers'),own=path.join(dir,'sanskrit_learning-setup-own.cmd'),stale=path.join(dir,'sanskrit_learning-setup-old.cmd'),other=path.join(dir,'unrelated.cmd');
  for(const f of [own,stale,other])fs.writeFileSync(f,'@echo off\r\n');
- const r=spawnSync('powershell.exe',['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-Command','. "'+HELPERS+'"; Remove-StaleLaunchers'],{env:{...process.env,TEMP:dir,CONFAB_LAUNCHER:own},windowsHide:true});
+ const r=spawnSync('powershell.exe',['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-Command','. "'+HELPERS+'"; Remove-StaleLaunchers'],{env:{...process.env,TEMP:dir,SANSKRIT_LEARNING_LAUNCHER:own},windowsHide:true});
  assert.equal(r.status,0);
  assert.equal(fs.existsSync(stale),false,'a launcher from an earlier run is removed');
  assert.equal(fs.existsSync(own),true,'the running launcher is kept');
- assert.equal(fs.existsSync(other),true,'files that are not Confab launchers are untouched');
+ assert.equal(fs.existsSync(other),true,'files that are not SanskritLearning launchers are untouched');
  assert.match(fs.readFileSync(path.join(__dirname,'..','scripts','setup.ps1'),'utf8'),/Remove-StaleLaunchers/);
- assert.match(fs.readFileSync(path.join(__dirname,'..','scripts','uninstall.ps1'),'utf8'),/Remove-StaleLaunchers[\s\S]*confab-setup\.log/);
+ assert.match(fs.readFileSync(path.join(__dirname,'..','scripts','uninstall.ps1'),'utf8'),/Remove-StaleLaunchers[\s\S]*sanskrit_learning-setup\.log/);
 });
 test('agent JSON output is ASCII, so Windows PowerShell reads it correctly under any code page',()=>{
  const r=spawnSync(process.execPath,[path.join(__dirname,'..','scripts','agents.cjs'),'connect','no-such-agent','--json'],{encoding:'utf8'});
@@ -101,7 +101,7 @@ test('installation state is written whole and interrupted leftovers are cleared'
  for(const p of ['app/assets/models/keep','app/src/keep','uninstaller/uninstall.ps1','state.json'])assert.equal(exists(p),true,p+' kept');
 });
 
-test('the launcher does not start a half-installed or uninstalling Confab',{skip:win},()=>{
+test('the launcher does not start a half-installed or uninstalling SanskritLearning',{skip:win},()=>{
  const run=state=>{
   const base=scratch('launcher-'+state),profile=path.join(base,'profile');fs.mkdirSync(profile);
   fs.copyFileSync(path.join(__dirname,'..','scripts','start-resident.ps1'),path.join(profile,'start-resident.ps1'));
@@ -122,7 +122,7 @@ test('setup registers its uninstaller first and marks the installation ready onl
  inOrder(setup,['Enter-SetupLock','Remove-InterruptedLeftovers $base',"Set-InstallState $base 'installing'",'Staged = $newUninstaller',"'UninstallString'",
   'Get-AuthenticodeSignature -LiteralPath $newNode','& $newNode -v','Target = $runtime','Install-Staged (@($dirs + $files)',"Target = (Join-Path $app 'node_modules')",
   'models.cjs',"Set-InstallState $base 'ready'",'install-resident.ps1'],'setup');
- assert.ok(setup.includes(String.raw`'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Confab'`),'Settings > Apps key path');
+ assert.ok(setup.includes(String.raw`'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\SanskritLearning'`),'Settings > Apps key path');
  assert.ok(setup.includes(String.raw`'System32\WindowsPowerShell\v1.0\powershell.exe') + '" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $uninstaller 'uninstall.ps1') + '" -Gui'`),'Settings > Apps runs the uninstaller in its own folder');
  assert.ok(setup.includes(String.raw`(Join-Path $source ('scripts\' + $file))`),'uninstaller files are copied from scripts');
 });
@@ -131,7 +131,7 @@ test('uninstall removes in an order that can always be finished by running it ag
  inOrder(uninstall,['Enter-SetupLock','check-disconnect --json','disconnect all --json',"Set-InstallState $base 'uninstalling'",'Remove-ItemProperty -LiteralPath $runKey',
   'Remove-Item -LiteralPath $shortcut','Stop-Process -Id $_.ProcessId',"'.removing-'",'Remove-InterruptedLeftovers $base','Remove-Item -LiteralPath $appsKey',"(Join-Path $base 'uninstaller')",'Stop-ProgressWindow','Show-Message ($log'],'uninstall');
  const dialogs=fs.readFileSync(path.join(__dirname,'..','src','ui','dialogs.ps1'),'utf8'),tray=dialogs.slice(dialogs.indexOf('function Show-Uninstall'),dialogs.indexOf('\ntry {'));
- assert.match(tray,/Confab\\uninstaller\\uninstall\.ps1[\s\S]*'-Gui'\)/,'the tray runs the installed uninstaller, which asks itself');
+ assert.match(tray,/SanskritLearning\\uninstaller\\uninstall\.ps1[\s\S]*'-Gui'\)/,'the tray runs the installed uninstaller, which asks itself');
  assert.doesNotMatch(tray,/KeepModels|DeleteModels|ShowDialog/,'no second confirmation in the tray');
 });
 test('scripts contain no stray control characters (an editing slip once turned \\v into one)',()=>{
@@ -194,6 +194,6 @@ test('the app icon has every size Windows asks for and is used by the tray, Star
  assert.match(read('src/ui/dialogs.ps1'),/\$f\.Icon = New-Object System\.Drawing\.Icon \$iconFile/,'tray windows');
  const uninstall=read('scripts/uninstall.ps1');
  assert.match(uninstall,/\$form\.Icon = New-Object System\.Drawing\.Icon \$iconFile/,'uninstall confirmation window');
- assert.match(uninstall,/\$env:CONFAB_ICON = \[string\]\$iconFile[\s\S]*|\$f\.Icon = New-Object System\.Drawing\.Icon \$env:CONFAB_ICON/,'uninstall progress window');
- assert.ok(uninstall.includes('$f.Icon = New-Object System.Drawing.Icon $env:CONFAB_ICON')&&uninstall.includes('$env:CONFAB_ICON = [string]$iconFile'),'the progress window gets the icon path');
+ assert.match(uninstall,/\$env:SANSKRIT_LEARNING_ICON = \[string\]\$iconFile[\s\S]*|\$f\.Icon = New-Object System\.Drawing\.Icon \$env:SANSKRIT_LEARNING_ICON/,'uninstall progress window');
+ assert.ok(uninstall.includes('$f.Icon = New-Object System.Drawing.Icon $env:SANSKRIT_LEARNING_ICON')&&uninstall.includes('$env:SANSKRIT_LEARNING_ICON = [string]$iconFile'),'the progress window gets the icon path');
 });

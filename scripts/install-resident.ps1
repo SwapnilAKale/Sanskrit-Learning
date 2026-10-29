@@ -1,11 +1,11 @@
-# Installs Confab for the current Windows user: login startup and a Start menu shortcut. -Uninstall removes both.
+# Installs SanskritLearning for the current Windows user: login startup and a Start menu shortcut. -Uninstall removes both.
 param([switch]$Uninstall, [switch]$StartNow)
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$profileDir = Join-Path $env:LOCALAPPDATA 'Confab\resident'
+$profileDir = Join-Path $env:LOCALAPPDATA 'SanskritLearning\resident'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 # Start menu shortcut.
-$shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'Confab.lnk'
+$shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'SanskritLearning.lnk'
 if ($Uninstall) {
     # Quit the running service first: the process recorded in endpoint.json, if it is ours.
     $endpointFile = Join-Path $profileDir 'endpoint.json'
@@ -17,12 +17,12 @@ if ($Uninstall) {
         } catch { }
         Remove-Item -LiteralPath $endpointFile -ErrorAction SilentlyContinue
     }
-    Remove-ItemProperty -LiteralPath $runKey -Name 'Confab' -ErrorAction SilentlyContinue
+    Remove-ItemProperty -LiteralPath $runKey -Name 'SanskritLearning' -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $shortcut -ErrorAction SilentlyContinue
-    Write-Output 'Confab stopped; login startup and Start menu shortcuts removed. Your settings, drafts and logs were kept in the profile folder.'
+    Write-Output 'SanskritLearning stopped; login startup and Start menu shortcuts removed. Your settings, drafts and logs were kept in the profile folder.'
     exit 0
 }
-# The runtime setup installs beside the app (%LOCALAPPDATA%\Confab\runtime\node); in a development checkout, node on PATH.
+# The runtime setup installs beside the app (%LOCALAPPDATA%\SanskritLearning\runtime\node); in a development checkout, node on PATH.
 $nodePath = [IO.Path]::GetFullPath((Join-Path $projectRoot '..\runtime\node\node.exe'))
 if (-not (Test-Path -LiteralPath $nodePath)) { $nodePath = (Get-Command node.exe -CommandType Application).Source }
 New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
@@ -44,18 +44,18 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'start-resident.ps1') -Destinati
 $powerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $command = '"' + $powerShell + '" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $launcher + '"'
 New-Item -Path $runKey -Force | Out-Null
-New-ItemProperty -LiteralPath $runKey -Name 'Confab' -Value $command -PropertyType String -Force | Out-Null
-# Starts Confab after Quit without signing out; the launcher does nothing if it is already running.
+New-ItemProperty -LiteralPath $runKey -Name 'SanskritLearning' -Value $command -PropertyType String -Force | Out-Null
+# Starts SanskritLearning after Quit without signing out; the launcher does nothing if it is already running.
 $link = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut)
 $link.TargetPath = $powerShell
 $link.Arguments = '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $launcher + '"'
 $link.WorkingDirectory = $profileDir
 $link.WindowStyle = 7
-$link.Description = 'Start Confab (does nothing if it is already running)'
+$link.Description = 'Start SanskritLearning (does nothing if it is already running)'
 $icon = Join-Path $projectRoot 'assets\app.ico'
 if (Test-Path -LiteralPath $icon) { $link.IconLocation = $icon + ',0' }
 $link.Save()
-Write-Output 'Confab login startup and Start menu shortcuts installed for the current Windows user. No administrator rights or scheduled task used.'
+Write-Output 'SanskritLearning login startup and Start menu shortcuts installed for the current Windows user. No administrator rights or scheduled task used.'
 # Start it the way the Start menu does, through the Windows shell: started directly from this window, it would belong
 # to this window's job (and die when the window or the app hosting it closes) and could share an app's private AppData.
 if ($StartNow) { . (Join-Path $PSScriptRoot 'windows-shell.ps1'); Start-ViaShell $shortcut }

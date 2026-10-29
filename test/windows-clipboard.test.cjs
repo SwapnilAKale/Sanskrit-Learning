@@ -100,17 +100,17 @@ test('missing accessibility service fails startup and releases native resources'
   assert.equal((await native.ready).failed,true);assert.equal(closed,2);native.close();assert.equal(closed,2);
 });
 
-test('hotkeys default to top-row numbers and allow explicit remapping',()=>{
+test('hotkeys default to the letters below the number row and allow explicit remapping',()=>{
   const {parseHotkeys}=require('../src/input/hotkeys.cjs');
   const defaults=parseHotkeys();
-  assert.deepEqual(Object.values(defaults).map(x=>x.vk),[0x39,0x38,0x30]);
-  assert.equal(parseHotkeys({capture:'Ctrl+Shift+7'}).capture.vk,0x37);
+  assert.deepEqual(Object.values(defaults).map(x=>x.vk),[0x4f,0x49,0x50]);
+  assert.equal(parseHotkeys({capture:'Ctrl+Shift+U'}).capture.vk,0x55);
   assert.throws(()=>parseHotkeys({capture:'Ctrl+Alt+I'}));
-  assert.throws(()=>parseHotkeys({capture:'Ctrl+Shift+9'}));
+  assert.throws(()=>parseHotkeys({capture:'Ctrl+Shift+O'}));
 });
 test('shortcut conflict closes the input backend and reports the conflicting chord',async()=>{
   const closed=[];const native=new WindowsTextInput({api:{registerHotkeys:()=>[true,false,true],close:()=>closed.push('api')},accessibility:{ready:Promise.resolve(true),close:()=>closed.push('accessibility')}});
-  const ready=await native.ready;assert.equal(ready.failed,true);assert.deepEqual(ready.conflicts,['Ctrl+Shift+8']);assert.equal(closed.length,2);
+  const ready=await native.ready;assert.equal(ready.failed,true);assert.deepEqual(ready.conflicts,['Ctrl+Shift+I']);assert.equal(closed.length,2);
 });
 
 test('recent mouse movement alone does not reject a stable editable target',async t=>{

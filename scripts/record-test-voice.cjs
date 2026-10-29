@@ -1,5 +1,5 @@
 'use strict';
-// Records test dictations with Confab's own microphone capture (16 kHz mono), one WAV and one .txt per prompt,
+// Records test dictations with SanskritLearning's own microphone capture (16 kHz mono), one WAV and one .txt per prompt,
 // into test-output/my-recordings (git-ignored). A developer tool for tuning the speech detector (src/vad-settings.cjs)
 // with a real voice and microphone, and the input of scripts/benchmark.cjs; see docs/DEVELOPER_GUIDE.md.
 // Press Enter to start a take, speak, press Enter to stop. Type "r" + Enter to redo the last one.
@@ -28,7 +28,7 @@ const rl=readline.createInterface({input:process.stdin,output:process.stdout});
 const ask=q=>new Promise(r=>rl.question(q,r));
 (async()=>{
  const audio=new ThreadedAudio();await audio.probe();
- console.log('Recording into '+OUT+'\nQuiet Confab first (tray > Pause hotkeys) so the two do not share the microphone.\n');
+ console.log('Recording into '+OUT+'\nQuiet SanskritLearning first (tray > Pause hotkeys) so the two do not share the microphone.\n');
  for(let i=0;i<PROMPTS.length;i++){
   const [name,text,how]=PROMPTS[i];
   console.log('['+(i+1)+'/'+PROMPTS.length+'] Say: "'+text+'"  ('+how+')');

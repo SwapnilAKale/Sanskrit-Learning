@@ -34,7 +34,7 @@
     },
     "file": "~/.gemini/config/hooks.json",
     "format": "group",
-    "group": "confab",
+    "group": "sanskrit_learning",
     "eventArg": true,
     "events": {
       "Stop": {

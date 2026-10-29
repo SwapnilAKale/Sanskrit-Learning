@@ -1,18 +1,18 @@
 # Custom agents
 
-Connect an agent you built yourself, so that its answer is read aloud when the user asked by voice. Your agent makes two calls: one when the user's message arrives, one when the final answer is ready. Confab decides whether to speak.
+Connect an agent you built yourself, so that its answer is read aloud when the user asked by voice. Your agent makes two calls: one when the user's message arrives, one when the final answer is ready. SanskritLearning decides whether to speak.
 
 What you need:
 
-- Confab installed and running on the same PC, signed in as the same Windows user as your agent. The service only answers on `127.0.0.1`, and its access token is readable only by that user.
+- SanskritLearning installed and running on the same PC, signed in as the same Windows user as your agent. The service only answers on `127.0.0.1`, and its access token is readable only by that user.
 - Python 3.8 or later, or Node.js. Any other language can use the [HTTP API](#http-api) directly.
 
-Building Confab itself, or adding a built-in agent with lifecycle hooks? See the [developer guide](DEVELOPER_GUIDE.md).
+Building SanskritLearning itself, or adding a built-in agent with lifecycle hooks? See the [developer guide](DEVELOPER_GUIDE.md).
 
 ## Quick start
 
-1. **Copy one client file** next to your code: `confab.py` or `client.cjs` (see [step 1](#1-copy-a-client)).
-2. **Check that Confab is running** (see [step 2](#2-check-that-confab-is-running)).
+1. **Copy one client file** next to your code: `sanskrit_learning.py` or `client.cjs` (see [step 1](#1-copy-a-client)).
+2. **Check that SanskritLearning is running** (see [step 2](#2-check-that-sanskritlearning-is-running)).
 3. **Run the echo agent** and confirm that a talk-back message is spoken (see [step 3](#3-confirm-your-setup-with-the-echo-agent)).
 4. **Find the two places in your agent**: where the user's text arrives, and where the final answer is ready (see [step 4](#4-find-the-two-places-in-your-agent)).
 5. **Add `turn()` and `speak()`** at those places (see [step 5](#5-add-the-two-calls)).
@@ -21,10 +21,10 @@ Building Confab itself, or adding a built-in agent with lifecycle hooks? See the
 ## How it works
 
 ```text
- user presses Ctrl+Shift+7, speaks, presses Ctrl+Shift+7
+ user presses Ctrl+Shift+U, speaks, presses Ctrl+Shift+U
         │
         ▼
- Confab transcribes and remembers the text as the talk-back draft ──────────────┐
+ SanskritLearning transcribes and remembers the text as the talk-back draft ──────────────┐
         │                                                                       │
         ▼                                                                       │
  the text is pasted into your agent's input box (or put on the clipboard)       │
@@ -33,19 +33,19 @@ Building Confab itself, or adding a built-in agent with lifecycle hooks? See the
  the user sends it; your UI passes it to your backend                           │
         │                                                                       │
         ▼                                                                       │
- your backend calls turn(text) ──────► Confab compares text with the draft ◄────┘
+ your backend calls turn(text) ──────► SanskritLearning compares text with the draft ◄────┘
         │                                    match: this turn owns the talk-back
         ▼                                    no_match: this turn's answer stays silent
  your agent works out the answer
         │
         ▼
- your backend calls speak(answer, turn_id) ──► owned turn: Confab reads the answer aloud
+ your backend calls speak(answer, turn_id) ──► owned turn: SanskritLearning reads the answer aloud
                                                otherwise: silent
 ```
 
-Confab never sees what the user typed or dictated into your agent. It only knows the text it transcribed, and the texts your agent reports. That is why your agent must report every message with `turn()`: Confab works out from the text whether that message was the voice one.
+SanskritLearning never sees what the user typed or dictated into your agent. It only knows the text it transcribed, and the texts your agent reports. That is why your agent must report every message with `turn()`: SanskritLearning works out from the text whether that message was the voice one.
 
-Only messages dictated with **Ctrl+Shift+7** get a spoken answer. Typed messages and plain dictation (**Ctrl+Shift+8**) never do. There is no way to make Confab speak an answer the user didn't ask for by voice.
+Only messages dictated with **Ctrl+Shift+U** get a spoken answer. Typed messages and plain dictation (**Ctrl+Shift+I**) never do. There is no way to make SanskritLearning speak an answer the user didn't ask for by voice.
 
 ## 1. Copy a client
 
@@ -53,19 +53,19 @@ Each client is one file with no dependencies. It finds the running service, adds
 
 | Language | File | Where to copy it from |
 |---|---|---|
-| Python 3.8+ | `confab.py` | `%LOCALAPPDATA%\Confab\app\src\pc\confab.py`, or `src/pc/confab.py` in this repository |
-| Node.js | `client.cjs` | `%LOCALAPPDATA%\Confab\app\src\pc\client.cjs`, or `src/pc/client.cjs` in this repository |
+| Python 3.8+ | `sanskrit_learning.py` | `%LOCALAPPDATA%\SanskritLearning\app\src\pc\sanskrit_learning.py`, or `src/pc/sanskrit_learning.py` in this repository |
+| Node.js | `client.cjs` | `%LOCALAPPDATA%\SanskritLearning\app\src\pc\client.cjs`, or `src/pc/client.cjs` in this repository |
 
-Copy the file into your project rather than importing it from the install folder: uninstalling Confab deletes that folder, and setup replaces it on every update. A copied client keeps working when Confab is not installed. Every call then answers `unavailable`, and your agent carries on.
+Copy the file into your project rather than importing it from the install folder: uninstalling SanskritLearning deletes that folder, and setup replaces it on every update. A copied client keeps working when SanskritLearning is not installed. Every call then answers `unavailable`, and your agent carries on.
 
 The clients don't check the service version. The service reports its version in `/health` (`"version"`) and in `endpoint.json`.
 
-## 2. Check that Confab is running
+## 2. Check that SanskritLearning is running
 
-With `confab.py` in the current folder:
+With `sanskrit_learning.py` in the current folder:
 
 ```powershell
-python -c "import confab, json; print(json.dumps(confab.status(), indent=1))"
+python -c "import sanskrit_learning, json; print(json.dumps(sanskrit_learning.status(), indent=1))"
 ```
 
 With `client.cjs` in the current folder:
@@ -74,7 +74,7 @@ With `client.cjs` in the current folder:
 node -e "require('./client.cjs').status().then(s=>console.log(JSON.stringify(s,null,1)))"
 ```
 
-`null` (Node) or `None` (Python) means Confab isn't running: start it from **Start → Confab**. A running service answers like this (trimmed):
+`null` (Node) or `None` (Python) means SanskritLearning isn't running: start it from **Start → SanskritLearning**. A running service answers like this (trimmed):
 
 ```json
 {
@@ -83,7 +83,7 @@ node -e "require('./client.cjs').status().then(s=>console.log(JSON.stringify(s,n
  "models": "unloaded",
  "readMode": "talkback",
  "talkback": "none",
- "hotkeys": {"capture": "Ctrl+Shift+8", "disarm": "Ctrl+Shift+6", "talkback": "Ctrl+Shift+7"},
+ "hotkeys": {"capture": "Ctrl+Shift+I", "disarm": "Ctrl+Shift+Y", "talkback": "Ctrl+Shift+U"},
  "paused": false,
  "requests": {"total": 0, "accepted": 0, "rejected": 0, "byReason": {}},
  "lastRejected": null
@@ -91,7 +91,7 @@ node -e "require('./client.cjs').status().then(s=>console.log(JSON.stringify(s,n
 ```
 
 - `readMode`: `"talkback"` (answers to voice messages are spoken) or `"off"` (nothing is spoken). Set in the tray menu.
-- `talkback`: what is waiting right now. `"none"`, `"dictation"` (the user dictated with Ctrl+Shift+7 and no turn has matched it yet) or `"turn"` (a turn matched, and its answer will be spoken). Useful while debugging.
+- `talkback`: what is waiting right now. `"none"`, `"dictation"` (the user dictated with Ctrl+Shift+U and no turn has matched it yet) or `"turn"` (a turn matched, and its answer will be spoken). Useful while debugging.
 - `paused`: `true` when the user chose **Pause hotkeys** in the tray. Every call then answers `paused`.
 - `models: "unloaded"` is normal: the speech models load on first use and unload after 15 idle minutes.
 
@@ -99,23 +99,23 @@ node -e "require('./client.cjs').status().then(s=>console.log(JSON.stringify(s,n
 
 Before touching your real agent, run this echo agent. It answers with what you said.
 
-**Python**: save as `echo_agent.py` next to `confab.py`, then run `python echo_agent.py`:
+**Python**: save as `echo_agent.py` next to `sanskrit_learning.py`, then run `python echo_agent.py`:
 
 ```python
-"""Echo agent: answers with what you said. Confab speaks the answer when you dictated with Ctrl+Shift+7."""
-import confab  # confab.py, copied next to this file
+"""Echo agent: answers with what you said. SanskritLearning speaks the answer when you dictated with Ctrl+Shift+U."""
+import sanskrit_learning  # sanskrit_learning.py, copied next to this file
 
 AGENT = "echo-agent"   # any name you like; turn() and speak() must use the same one
 SESSION = "echo-1"     # one conversation; use your own conversation ID in a real agent
 
 
 def main():
-    health = confab.status()
+    health = sanskrit_learning.status()
     if health is None:
-        print("Confab is not running. Start it from Start > Confab, then run this again.")
+        print("SanskritLearning is not running. Start it from Start > SanskritLearning, then run this again.")
         return
-    print(f"Confab {health['version']} is running. Read-aloud mode: {health['readMode']}.")
-    print("Type a message, or dictate one with Ctrl+Shift+7 and paste it (Ctrl+V). Ctrl+C quits.")
+    print(f"SanskritLearning {health['version']} is running. Read-aloud mode: {health['readMode']}.")
+    print("Type a message, or dictate one with Ctrl+Shift+U and paste it (Ctrl+V). Ctrl+C quits.")
     while True:
         try:
             message = input("You: ").strip()
@@ -123,11 +123,11 @@ def main():
             break
         if not message:
             continue
-        t = confab.turn(message, agent=AGENT, session_id=SESSION)           # 1. the user's text arrived
+        t = sanskrit_learning.turn(message, agent=AGENT, session_id=SESSION)           # 1. the user's text arrived
         answer = "You said: " + message                                       # 2. your agent works here
         print("Agent:", answer)
-        r = confab.speak(answer, agent=AGENT, session_id=SESSION, turn_id=t["turnId"])  # 3. final answer ready
-        print(f"  [confab] turn={t['reason']} reply={r['reason']}")
+        r = sanskrit_learning.speak(answer, agent=AGENT, session_id=SESSION, turn_id=t["turnId"])  # 3. final answer ready
+        print(f"  [sanskrit_learning] turn={t['reason']} reply={r['reason']}")
 
 
 if __name__ == "__main__":
@@ -137,29 +137,29 @@ if __name__ == "__main__":
 **Node**: save as `echo-agent.cjs` next to `client.cjs`, then run `node echo-agent.cjs`:
 
 ```js
-// Echo agent: answers with what you said. Confab speaks the answer when you dictated with Ctrl+Shift+7.
+// Echo agent: answers with what you said. SanskritLearning speaks the answer when you dictated with Ctrl+Shift+U.
 const readline = require('node:readline');
-const confab = require('./client.cjs'); // client.cjs, copied next to this file
+const sanskrit_learning = require('./client.cjs'); // client.cjs, copied next to this file
 
 const AGENT = 'echo-agent';  // any name you like; turn() and speak() must use the same one
 const SESSION = 'echo-1';    // one conversation; use your own conversation ID in a real agent
 
 async function main() {
-  const health = await confab.status();
-  if (!health) { console.log('Confab is not running. Start it from Start > Confab, then run this again.'); return; }
-  console.log(`Confab ${health.version} is running. Read-aloud mode: ${health.readMode}.`);
-  console.log('Type a message, or dictate one with Ctrl+Shift+7 and paste it (Ctrl+V). Ctrl+C quits.');
+  const health = await sanskrit_learning.status();
+  if (!health) { console.log('SanskritLearning is not running. Start it from Start > SanskritLearning, then run this again.'); return; }
+  console.log(`SanskritLearning ${health.version} is running. Read-aloud mode: ${health.readMode}.`);
+  console.log('Type a message, or dictate one with Ctrl+Shift+U and paste it (Ctrl+V). Ctrl+C quits.');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'You: ' });
   let closed = false; rl.on('close', () => { closed = true; });
   rl.prompt();
   for await (const line of rl) {
     const message = line.trim();
     if (message) {
-      const t = await confab.turn(message, { agent: AGENT, sessionId: SESSION });           // 1. the user's text arrived
+      const t = await sanskrit_learning.turn(message, { agent: AGENT, sessionId: SESSION });           // 1. the user's text arrived
       const answer = 'You said: ' + message;                                                   // 2. your agent works here
       console.log('Agent:', answer);
-      const r = await confab.speak(answer, { agent: AGENT, sessionId: SESSION, turnId: t.turnId }); // 3. final answer ready
-      console.log(`  [confab] turn=${t.reason} reply=${r.reason}`);
+      const r = await sanskrit_learning.speak(answer, { agent: AGENT, sessionId: SESSION, turnId: t.turnId }); // 3. final answer ready
+      console.log(`  [sanskrit_learning] turn=${t.reason} reply=${r.reason}`);
     }
     if (!closed) rl.prompt();
   }
@@ -170,8 +170,8 @@ main();
 
 Then test both kinds of message:
 
-1. **Type** `hello` and press Enter. Expect `turn=no_match reply=not_talkback` and silence. That holds only when no talk-back draft is waiting: if you dictated with Ctrl+Shift+7 and haven't sent it, the reply is `held` instead, as in the [manual test](#manual-test).
-2. **Dictate**: press **Ctrl+Shift+7**, say a sentence, press **Ctrl+Shift+7** again. In Windows Terminal or a PowerShell window, Confab doesn't type for you: it puts the text on the clipboard (see the README, [Terminals](../README.md#terminals)). Paste it with **Ctrl+V** and press Enter; it still counts as the talk-back message. In the terminal panel of VS Code or Cursor, the text is pasted directly. Expect `turn=match reply=queued`, and you hear "You said: …".
+1. **Type** `hello` and press Enter. Expect `turn=no_match reply=not_talkback` and silence. That holds only when no talk-back draft is waiting: if you dictated with Ctrl+Shift+U and haven't sent it, the reply is `held` instead, as in the [manual test](#manual-test).
+2. **Dictate**: press **Ctrl+Shift+U**, say a sentence, press **Ctrl+Shift+U** again. In Windows Terminal or a PowerShell window, SanskritLearning doesn't type for you: it puts the text on the clipboard (see the README, [Terminals](../README.md#terminals)). Paste it with **Ctrl+V** and press Enter; it still counts as the talk-back message. In the terminal panel of VS Code or Cursor, the text is pasted directly. Expect `turn=match reply=queued`, and you hear "You said: …".
 
 If step 2 doesn't give `match` and `queued`, see [Nothing is spoken](#nothing-is-spoken).
 
@@ -201,48 +201,48 @@ Call `speak()` whether your agent succeeds or fails. If your agent fails and nev
 Python (Flask):
 
 ```python
-import confab
+import sanskrit_learning
 
 @app.post("/chat")
 def chat():
     message = request.json["message"]
     conversation_id = request.json.get("conversation_id", "default")
-    t = confab.turn(message, agent="my-agent", session_id=conversation_id)   # place 1
+    t = sanskrit_learning.turn(message, agent="my-agent", session_id=conversation_id)   # place 1
     answer = "Sorry, something went wrong."
     try:
         answer = run_agent(message, conversation_id)                           # your agent
         return {"answer": answer}
     finally:                                                                   # place 2, on success or failure
-        confab.speak(answer, agent="my-agent", session_id=conversation_id, turn_id=t["turnId"])
+        sanskrit_learning.speak(answer, agent="my-agent", session_id=conversation_id, turn_id=t["turnId"])
 ```
 
 Python with asyncio (FastAPI, aiohttp, websockets): the Python client is **blocking** and has no async version. Run it in a worker thread so it never holds up the event loop:
 
 ```python
-import asyncio, confab
+import asyncio, sanskrit_learning
 
 @app.post("/chat")
 async def chat(body: ChatIn):
-    t = await asyncio.to_thread(confab.turn, body.message, agent="my-agent", session_id=body.conversation_id)
+    t = await asyncio.to_thread(sanskrit_learning.turn, body.message, agent="my-agent", session_id=body.conversation_id)
     answer = "Sorry, something went wrong."
     try:
         answer = await run_agent(body.message)
         return {"answer": answer}
     finally:
-        await asyncio.to_thread(confab.speak, answer, agent="my-agent",
+        await asyncio.to_thread(sanskrit_learning.speak, answer, agent="my-agent",
                                 session_id=body.conversation_id, turn_id=t["turnId"])
 ```
 
-`asyncio.to_thread` needs Python 3.9. On 3.8, use `loop.run_in_executor(None, functools.partial(confab.turn, ...))`.
+`asyncio.to_thread` needs Python 3.9. On 3.8, use `loop.run_in_executor(None, functools.partial(sanskrit_learning.turn, ...))`.
 
 Node (Express). The Node client is asynchronous: `turn()` and `speak()` return promises and never block:
 
 ```js
-const confab = require('./client.cjs');
+const sanskrit_learning = require('./client.cjs');
 
 app.post('/chat', async (req, res) => {
   const { message, conversationId = 'default' } = req.body;
-  const t = await confab.turn(message, { agent: 'my-agent', sessionId: conversationId });   // place 1
+  const t = await sanskrit_learning.turn(message, { agent: 'my-agent', sessionId: conversationId });   // place 1
   let answer = 'Sorry, something went wrong.';
   try {
     answer = await runAgent(message, conversationId);                                         // your agent
@@ -250,7 +250,7 @@ app.post('/chat', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: answer });
   } finally {                                                                                 // place 2, on success or failure
-    await confab.speak(answer, { agent: 'my-agent', sessionId: conversationId, turnId: t.turnId });
+    await sanskrit_learning.speak(answer, { agent: 'my-agent', sessionId: conversationId, turnId: t.turnId });
   }
 });
 ```
@@ -265,7 +265,7 @@ try:
         chunks.append(chunk)
     answer = "".join(chunks)
 finally:
-    confab.speak(answer, agent="my-agent", session_id=conversation_id, turn_id=t["turnId"])
+    sanskrit_learning.speak(answer, agent="my-agent", session_id=conversation_id, turn_id=t["turnId"])
 ```
 
 **Logging during development**: log `t["reason"]` and the result of `speak()` (`["reason"]`), as the echo agent does. Those two words tell you what happened. See [Reasons](#reasons).
@@ -274,13 +274,13 @@ finally:
 
 ### Functions
 
-Python (`confab.py`):
+Python (`sanskrit_learning.py`):
 
 | Function | Returns |
 |---|---|
 | `turn(text, *, agent="custom", session_id="default", turn_id=None, profile=None, timeout=0.25)` | the service's result plus `"turnId"`: the ID you passed, or a new UUID |
 | `speak(text, *, agent="custom", session_id="default", id=None, turn_id=None, profile=None, timeout=0.25)` | the service's result |
-| `status(*, profile=None, timeout=0.25)` | the `/health` response, or `None` when Confab is not available |
+| `status(*, profile=None, timeout=0.25)` | the `/health` response, or `None` when SanskritLearning is not available |
 | `event(data, *, agent="custom", session_id="default", profile=None, timeout=0.25)` | the service's result, for events the other functions don't cover (`detach`, `final: False`, `reply-end`) |
 
 Node (`client.cjs`). The options use camelCase:
@@ -292,34 +292,34 @@ Node (`client.cjs`). The options use camelCase:
 | `status({profile})` | the `/health` response, or `null`. It has no `timeout` option: it always uses 250 ms. |
 | `event(data, {agent, sessionId, profile, timeout})` | the service's result |
 
-The service's result is an object with `accepted` (true or false), `reason` (see [Reasons](#reasons)), sometimes `detail`, and `status` (the HTTP status code). When Confab can't be reached, it is `{"accepted": false, "reason": "unavailable"}` with no `status`. No function ever raises or rejects.
+The service's result is an object with `accepted` (true or false), `reason` (see [Reasons](#reasons)), sometimes `detail`, and `status` (the HTTP status code). When SanskritLearning can't be reached, it is `{"accepted": false, "reason": "unavailable"}` with no `status`. No function ever raises or rejects.
 
 ### agent and session_id
 
-- **`agent`**: a name for your agent, 1–100 characters, for example `"my-agent"`. It doesn't need to be registered anywhere or match anything in Confab: there is nothing to connect in the tray for a custom agent. It appears in Confab's request log, so pick something recognisable. Defaults to `"custom"`.
+- **`agent`**: a name for your agent, 1–100 characters, for example `"my-agent"`. It doesn't need to be registered anywhere or match anything in SanskritLearning: there is nothing to connect in the tray for a custom agent. It appears in SanskritLearning's request log, so pick something recognisable. Defaults to `"custom"`.
 - **`session_id`** (`sessionId` in Node): your conversation ID, at most 200 characters. Defaults to `"default"`. If your agent has no conversations, keep the default. If it has several (tabs, windows, chats), pass a different ID for each.
-- `turn()` and `speak()` for the same message **must use the same `agent` and `session_id`**. Confab ties a reply to its turn by the pair `agent` + `session_id`, plus the turn ID.
+- `turn()` and `speak()` for the same message **must use the same `agent` and `session_id`**. SanskritLearning ties a reply to its turn by the pair `agent` + `session_id`, plus the turn ID.
 
 ### Turn IDs and reply IDs
 
 - **Turn ID**: identifies one user message. `turn()` creates a UUID when you don't pass `turn_id`, and returns it as `"turnId"`. Pass the same value to `speak()` as `turn_id`. A reply with a missing or different turn ID doesn't get that turn's talk-back. Rules: a non-empty string of at most 200 characters. It only needs to be unique within your `agent` + `session_id`. A UUID per message is the safe choice.
 - **Reply ID** (`id`): identifies one answer. `speak()` creates a new UUID on every call when you don't pass `id`. The service ignores a second reply with the same `id` for the same `agent` + `session_id`, and answers `duplicate`. So if you retry `speak()` after a failure, pass the same `id` each time. Otherwise each retry counts as a new answer.
-- **Neither survives a restart of Confab.** Talk-back state and remembered reply IDs live in memory only. The service remembers the last 1,000 reply IDs.
+- **Neither survives a restart of SanskritLearning.** Talk-back state and remembered reply IDs live in memory only. The service remembers the last 1,000 reply IDs.
 
 ### profile and timeout
 
-- **`profile`**: the folder holding `endpoint.json` and `auth.json`. The default is `%LOCALAPPDATA%\Confab\resident`. Leave it unset. It is for tests, and for a process whose `LOCALAPPDATA` variable points somewhere else. Your agent must still run as the same Windows user, because only that user can read the folder.
-- **`timeout`**: how long a call may take before the client gives up and answers `unavailable`. Python: `0.25` seconds, applied to connecting and to each read separately. Node: `250` milliseconds for the whole request (`status()` always uses 250 ms). The service only queues the answer and never waits for speech: on a test PC a call took 2–4 ms, and the slowest of 40 took 22 ms. 250 ms leaves a wide margin while guaranteeing that a stuck or absent Confab never slows your agent noticeably. If `status()` works but calls sometimes answer `unavailable` on a heavily loaded machine, raise it, for example to `1` second or `1000` ms.
+- **`profile`**: the folder holding `endpoint.json` and `auth.json`. The default is `%LOCALAPPDATA%\SanskritLearning\resident`. Leave it unset. It is for tests, and for a process whose `LOCALAPPDATA` variable points somewhere else. Your agent must still run as the same Windows user, because only that user can read the folder.
+- **`timeout`**: how long a call may take before the client gives up and answers `unavailable`. Python: `0.25` seconds, applied to connecting and to each read separately. Node: `250` milliseconds for the whole request (`status()` always uses 250 ms). The service only queues the answer and never waits for speech: on a test PC a call took 2–4 ms, and the slowest of 40 took 22 ms. 250 ms leaves a wide margin while guaranteeing that a stuck or absent SanskritLearning never slows your agent noticeably. If `status()` works but calls sometimes answer `unavailable` on a heavily loaded machine, raise it, for example to `1` second or `1000` ms.
 
 ### What gets read aloud
 
-Send the answer exactly as the user sees it. You don't need to strip Markdown, code or links. With the default settings, Confab reads only the opening: the first paragraph, at most 3 sentences and 400 characters. It skips sentences it can't say well, such as code, file paths, URLs and JSON. "Full reply on screen." follows when something was left out, and "The reply is on screen." is said when nothing could be read, which includes an empty answer. Text limits: 60,000 characters per call, 256 KiB per request.
+Send the answer exactly as the user sees it. You don't need to strip Markdown, code or links. With the default settings, SanskritLearning reads only the opening: the first paragraph, at most 3 sentences and 400 characters. It skips sentences it can't say well, such as code, file paths, URLs and JSON. "Full reply on screen." follows when something was left out, and "The reply is on screen." is said when nothing could be read, which includes an empty answer. Text limits: 60,000 characters per call, 256 KiB per request.
 
 The full rules are in [What is spoken](DEVELOPER_GUIDE.md#what-is-spoken) and [Pronunciation](DEVELOPER_GUIDE.md#pronunciation).
 
 ### How matching works
 
-When a `turn` arrives, Confab compares its text with the talk-back draft, after normalising both:
+When a `turn` arrives, SanskritLearning compares its text with the talk-back draft, after normalising both:
 
 - letters are lowercased and Unicode-normalised (NFKC);
 - every run of characters other than letters and digits (spaces, punctuation, symbols, line breaks) becomes a single space;
@@ -345,27 +345,27 @@ There is **one talk-back for the whole PC** at a time: either a draft waiting fo
 |---|---|
 | The answer arrives with the matching turn ID | It is spoken (`queued`). The talk-back is used up. |
 | More than one reply for the turn | The first is spoken, every later one gets `not_talkback`. Send only the final answer. |
-| No reply at all (your agent failed) | The talk-back stays pending until the next talk-back dictation, Ctrl+Shift+6, the [cap](#hotkeys-tray-modes-and-the-cap), or a `detach` for that session. Either speak a short error message as the answer, or send `detach` to release it. |
+| No reply at all (your agent failed) | The talk-back stays pending until the next talk-back dictation, Ctrl+Shift+Y, the [cap](#hotkeys-tray-modes-and-the-cap), or a `detach` for that session. Either speak a short error message as the answer, or send `detach` to release it. |
 | A new message arrives before the previous one is answered | A message that doesn't match changes nothing: the earlier turn keeps the talk-back, and its answer is still spoken when it arrives. A new talk-back message that matches takes over, and the earlier answer becomes silent. |
-| The user dictated with Ctrl+Shift+7 but hasn't sent it, and sends a different message | That turn gets `no_match`, and the draft keeps waiting. While a draft waits and no turn owns the talk-back, every reply is held for 2 seconds (`held`), whatever its turn ID. It is spoken only if a turn matching the draft arrives in that time, for the same `agent` and `session_id` (and the same turn ID, when both have one). Otherwise it stays silent, logged as `held_expired`. |
-| The user presses Ctrl+Shift+6 while your agent works | The talk-back is cancelled and any speech stops. The answer gets `not_talkback`. |
+| The user dictated with Ctrl+Shift+U but hasn't sent it, and sends a different message | That turn gets `no_match`, and the draft keeps waiting. While a draft waits and no turn owns the talk-back, every reply is held for 2 seconds (`held`), whatever its turn ID. It is spoken only if a turn matching the draft arrives in that time, for the same `agent` and `session_id` (and the same turn ID, when both have one). Otherwise it stays silent, logged as `held_expired`. |
+| The user presses Ctrl+Shift+Y while your agent works | The talk-back is cancelled and any speech stops. The answer gets `not_talkback`. |
 | The answer arrives before its turn (both sent in parallel) | If a draft is waiting, the answer is held for 2 seconds (`held`). It is spoken if its matching turn arrives in that time. |
-| Confab restarts between the turn and the answer | The talk-back is lost. The answer gets `not_talkback`. |
-| A conversation closes | Optionally send `detach`: `confab.event({"event": "detach"}, agent="my-agent", session_id=conversation_id)`. That clears a matched turn for that session. It doesn't clear a draft that hasn't matched yet. |
+| SanskritLearning restarts between the turn and the answer | The talk-back is lost. The answer gets `not_talkback`. |
+| A conversation closes | Optionally send `detach`: `sanskrit_learning.event({"event": "detach"}, agent="my-agent", session_id=conversation_id)`. That clears a matched turn for that session. It doesn't clear a draft that hasn't matched yet. |
 
 **Two agents, or two windows of one agent.** The talk-back goes to whichever agent reports the matching text first. A newer talk-back dictation replaces a draft that hasn't matched yet, and a newer matching turn replaces an earlier one, whose answer then stays silent. For two windows of the same agent, give each window its own `session_id` and always pass turn IDs. If both windows share a `session_id` and you send turns without turn IDs, the first reply from either window would be spoken.
 
-**Agents that report several messages per turn.** If your agent produces in-between messages before its final answer and you can't tell which is final until the turn ends, send each as a reply with `"final": false` through `event()`. Then send `{"event": "reply-end", "turnId": …, "status": "completed"}` when the turn ends. Confab speaks the last one. See the [HTTP API](#http-api).
+**Agents that report several messages per turn.** If your agent produces in-between messages before its final answer and you can't tell which is final until the turn ends, send each as a reply with `"final": false` through `event()`. Then send `{"event": "reply-end", "turnId": …, "status": "completed"}` when the turn ends. SanskritLearning speaks the last one. See the [HTTP API](#http-api).
 
 ```python
-import uuid, confab
+import uuid, sanskrit_learning
 
-t = confab.turn(message, agent="my-agent", session_id=conversation_id)
+t = sanskrit_learning.turn(message, agent="my-agent", session_id=conversation_id)
 for text in in_between_messages:            # each message as your agent produces it
-    confab.event({"event": "reply", "text": text, "id": str(uuid.uuid4()),
+    sanskrit_learning.event({"event": "reply", "text": text, "id": str(uuid.uuid4()),
                   "turnId": t["turnId"], "final": False},
                  agent="my-agent", session_id=conversation_id)              # reason: candidate
-confab.event({"event": "reply-end", "turnId": t["turnId"], "status": "completed"},
+sanskrit_learning.event({"event": "reply-end", "turnId": t["turnId"], "status": "completed"},
              agent="my-agent", session_id=conversation_id)                  # judged like speak()
 ```
 
@@ -373,15 +373,15 @@ confab.event({"event": "reply-end", "turnId": t["turnId"], "status": "completed"
 
 ### Agents that do their own speech-to-text
 
-Talk-back starts only with Confab's own dictation (Ctrl+Shift+7). Confab can't tell that a message your agent transcribed from its own microphone was spoken, so those answers are never read aloud. If your agent has its own speech input, the user can still dictate with Ctrl+Shift+7 into your agent's text box, and that message's answer is spoken.
+Talk-back starts only with SanskritLearning's own dictation (Ctrl+Shift+U). SanskritLearning can't tell that a message your agent transcribed from its own microphone was spoken, so those answers are never read aloud. If your agent has its own speech input, the user can still dictate with Ctrl+Shift+U into your agent's text box, and that message's answer is spoken.
 
 ### Hotkeys, tray modes and the cap
 
 | Hotkey | Effect |
 |---|---|
-| Ctrl+Shift+8 | Plain dictation. Pastes the text. Never makes an answer spoken, and leaves a waiting talk-back as it is. |
-| Ctrl+Shift+7 | Talk-back dictation. Pastes the text and makes it the talk-back draft, replacing an older one. The draft is kept even if the paste falls back to the clipboard. |
-| Ctrl+Shift+6 | Cancel, at any time. Discards a recording in progress, so nothing is pasted. Clears the draft and the matched turn, and stops speech. It never erases text already in your agent's input box: the only keystroke Confab sends to a box is the Ctrl+V of a paste. |
+| Ctrl+Shift+I | Plain dictation. Pastes the text. Never makes an answer spoken, and leaves a waiting talk-back as it is. |
+| Ctrl+Shift+U | Talk-back dictation. Pastes the text and makes it the talk-back draft, replacing an older one. The draft is kept even if the paste falls back to the clipboard. |
+| Ctrl+Shift+Y | Cancel, at any time. Discards a recording in progress, so nothing is pasted. Clears the draft and the matched turn, and stops speech. It never erases text already in your agent's input box: the only keystroke SanskritLearning sends to a box is the Ctrl+V of a paste. |
 
 The keys can be changed in `settings.json` (`hotkeys`). The full behaviour of each key is under [Hotkeys](DEVELOPER_GUIDE.md#hotkeys) in the developer guide.
 
@@ -393,7 +393,7 @@ The keys can be changed in `settings.json` (`hotkeys`). The full behaviour of ea
 
 For agents in other languages. The service listens on `127.0.0.1` on a port chosen at each start.
 
-**Discovery.** Two files in `%LOCALAPPDATA%\Confab\resident\`:
+**Discovery.** Two files in `%LOCALAPPDATA%\SanskritLearning\resident\`:
 
 ```text
 endpoint.json   {"pid": 1234, "port": 52151, "version": "0.8.0"}   written while the service runs, removed when it stops normally
@@ -401,15 +401,15 @@ auth.json       {"token": "<64 lowercase hex characters>"}          created at i
 ```
 
 - Read both files **on every call**, or at least again after any failure. The port changes at each start.
-- If either file is missing or unreadable, Confab isn't installed or isn't running: skip the call silently.
-- The token stays the same until Confab is uninstalled and installed again. The folder is readable only by the current Windows user. Never copy the token into source code, config files, logs, prompts or a browser.
+- If either file is missing or unreadable, SanskritLearning isn't installed or isn't running: skip the call silently.
+- The token stays the same until SanskritLearning is uninstalled and installed again. The folder is readable only by the current Windows user. Never copy the token into source code, config files, logs, prompts or a browser.
 
 **Endpoints.**
 
 | Method and path | Purpose |
 |---|---|
 | `POST /event` | report a turn, a reply, `reply-end` or `detach` |
-| `GET /health` | service state (the response shown in [step 2](#2-check-that-confab-is-running)) |
+| `GET /health` | service state (the response shown in [step 2](#2-check-that-sanskritlearning-is-running)) |
 | `GET /requests` | the last 100 entries of the request log since the service started |
 
 **Headers** (on every request):
@@ -419,7 +419,7 @@ auth.json       {"token": "<64 lowercase hex characters>"}          created at i
 | `Authorization` | `Bearer <token from auth.json>` |
 | `Host` | exactly `127.0.0.1:<port>`. `localhost:<port>` is rejected. |
 | `Content-Type` | `application/json` for `POST`. The clients send it; the service doesn't require it. |
-| `Origin`, `Sec-Fetch-*` | **must be absent**. They, and any `OPTIONS` request, are rejected: browsers can't call Confab. |
+| `Origin`, `Sec-Fetch-*` | **must be absent**. They, and any `OPTIONS` request, are rejected: browsers can't call SanskritLearning. |
 
 **Body of `POST /event`**: a JSON object of at most 256 KiB, sent as UTF-8.
 
@@ -438,7 +438,7 @@ Example (Windows PowerShell). The first line matters: Windows PowerShell 5.1 sen
 
 ```powershell
 $OutputEncoding = [System.Text.UTF8Encoding]::new($false)   # send UTF-8; Windows PowerShell 5.1 sends ASCII by default
-$dir = "$env:LOCALAPPDATA\Confab\resident"
+$dir = "$env:LOCALAPPDATA\SanskritLearning\resident"
 $port = (Get-Content "$dir\endpoint.json" | ConvertFrom-Json).port
 $token = (Get-Content "$dir\auth.json" | ConvertFrom-Json).token
 $turnId = [guid]::NewGuid().ToString()
@@ -464,7 +464,7 @@ Every response is JSON: `{"accepted": <bool>, "reason": "<code>"}`, sometimes wi
 | Status | `accepted` | `reason` | Meaning | What to do |
 |---|---|---|---|---|
 | 202 | true | `queued` | It will be spoken, after any earlier answers. | Nothing. |
-| 202 | true | `held` | No turn owns the talk-back yet, but a talk-back draft is waiting: the user dictated with Ctrl+Shift+7 and hasn't sent it, or its turn hasn't arrived yet. Every reply that isn't owned is held for 2 seconds, whatever its turn ID. It is spoken if a turn matching the draft arrives in that time for the same `agent` and `session_id` (and the same turn ID, when both have one). | Nothing. If it is never spoken, the request log shows `held_expired`. If you expected it to be spoken, send the turn before the reply. |
+| 202 | true | `held` | No turn owns the talk-back yet, but a talk-back draft is waiting: the user dictated with Ctrl+Shift+U and hasn't sent it, or its turn hasn't arrived yet. Every reply that isn't owned is held for 2 seconds, whatever its turn ID. It is spoken if a turn matching the draft arrives in that time for the same `agent` and `session_id` (and the same turn ID, when both have one). | Nothing. If it is never spoken, the request log shows `held_expired`. If you expected it to be spoken, send the turn before the reply. |
 | 200 | false | `not_talkback` | This answer's turn doesn't own the talk-back. | Normal for typed messages. Otherwise check the turn ID, `agent` and `session_id`. |
 | 200 | false | `disabled` | The tray's read-aloud mode is Off. | The user switches it back to Talk-back only. |
 | 200 | false | `duplicate` | This `id` was already received for this `agent` + `session_id`. | Pass a new `id` for a new answer. |
@@ -486,7 +486,7 @@ Every response is JSON: `{"accepted": <bool>, "reason": "<code>"}`, sometimes wi
 
 | Status | `accepted` | `reason` | Meaning | What to do |
 |---|---|---|---|---|
-| none | false | `unavailable` | Returned by the client: Confab isn't running, or didn't answer within the timeout. | Start Confab. See [profile and timeout](#profile-and-timeout). |
+| none | false | `unavailable` | Returned by the client: SanskritLearning isn't running, or didn't answer within the timeout. | Start SanskritLearning. See [profile and timeout](#profile-and-timeout). |
 | 200 | false | `paused` | The user chose Pause hotkeys in the tray. Turns are not matched while paused. | The user un-pauses. |
 | 400 | false | `missing_id` | A reply without an `id`, or with an empty one. | Pass an `id`, or let `speak()` create one. |
 | 400 | false | `invalid_id`, `invalid_turn_id` | `id` or `turnId` isn't a non-empty string of at most 200 characters. | Fix the value. |
@@ -502,7 +502,7 @@ Every response is JSON: `{"accepted": <bool>, "reason": "<code>"}`, sometimes wi
 
 ### Logs
 
-- **`%LOCALAPPDATA%\Confab\resident\requests.jsonl`**: one line per request, with the time, route, event, `agent`, session, turn ID, status, `accepted`, `reason`, and the decision. It never contains the message or answer text, reply IDs or the token. When the file passes 256 KiB, it is renamed to `requests.1.jsonl` and a new one is started.
+- **`%LOCALAPPDATA%\SanskritLearning\resident\requests.jsonl`**: one line per request, with the time, route, event, `agent`, session, turn ID, status, `accepted`, `reason`, and the decision. It never contains the message or answer text, reply IDs or the token. When the file passes 256 KiB, it is renamed to `requests.1.jsonl` and a new one is started.
   - When a turn doesn't match a waiting draft, its line includes `"match": {"similarity": …, "draftChars": …, "promptChars": …, "contained": …}`. That's the similarity, the two normalised lengths, and whether the turn contains the whole draft. It's the quickest way to see why a message didn't match.
   - When the cap clears a forgotten talk-back, a line `{"route": "talkback", "event": "cap_cleared", "detail": "dictation" or "turn", "ageMs": …}` is added.
 - **`GET /requests`**: the last 100 of those entries since the service started.
@@ -512,14 +512,14 @@ Every response is JSON: `{"accepted": <bool>, "reason": "<code>"}`, sometimes wi
 
 Work through this list in order. Every call's `reason` and the `talkback` field of `status()` point to the cause.
 
-1. **Confab isn't running.** Calls answer `unavailable`, and `status()` returns `None`/`null`. Start it from Start → Confab.
+1. **SanskritLearning isn't running.** Calls answer `unavailable`, and `status()` returns `None`/`null`. Start it from Start → SanskritLearning.
 2. **The tray is set to Off.** `readMode` is `"off"`, and replies answer `disabled`.
 3. **Hotkeys are paused.** Every call answers `paused`.
-4. **Ctrl+Shift+8 was used instead of Ctrl+Shift+7.** The turn answers `no_match`, and `status()` showed `talkback: "none"` before the turn.
+4. **Ctrl+Shift+I was used instead of Ctrl+Shift+U.** The turn answers `no_match`, and `status()` showed `talkback: "none"` before the turn.
 5. **The text doesn't match.** The turn answers `no_match` while `status()` shows `talkback: "dictation"`. The request log line shows the similarity: report the user's message alone, not the full prompt (see [How matching works](#how-matching-works)).
 6. **`turn()` is never called, or is called after `speak()`.** The reply answers `not_talkback`, or `held` and later `held_expired` in the log.
 7. **The reply has a different turn ID, `agent` or `session_id` from the turn.** The turn answers `match` but the reply answers `not_talkback`.
-8. **A newer talk-back, Ctrl+Shift+6, `detach` or a Confab restart cleared it.** The reply answers `not_talkback`.
+8. **A newer talk-back, Ctrl+Shift+Y, `detach` or a SanskritLearning restart cleared it.** The reply answers `not_talkback`.
 9. **The cap expired.** The log has a `cap_cleared` line.
 10. **The reply answers `queued` but nothing is heard.** It's a sound problem, not an integration one. Check the speakers, the volume and the default playback device. The tray's **Diagnose…** checks that the speech models are present.
 
@@ -528,19 +528,19 @@ Work through this list in order. Every call's `reason` and the `talkback` field 
 | What the user does | `turn()` | `speak()` | Heard |
 |---|---|---|---|
 | Types a message, with no talk-back draft waiting | `no_match` | `not_talkback` | no |
-| Dictates with Ctrl+Shift+8 | `no_match` | `not_talkback` | no |
-| Dictates with Ctrl+Shift+7 and sends it | `match` | `queued` | yes, once |
-| Dictates with Ctrl+Shift+7 without sending, then types and sends a different message | `no_match` | `held`, then `held_expired` in the log | no |
-| Dictates with Ctrl+Shift+7, presses Ctrl+Shift+6, then sends | `no_match` | `not_talkback` | no |
-| Dictates with Ctrl+Shift+7, sends, presses Ctrl+Shift+6 while the agent works | `match` | `not_talkback` | no |
-| Tray set to Off, dictates with Ctrl+Shift+7 and sends | `match` | `disabled` | no |
+| Dictates with Ctrl+Shift+I | `no_match` | `not_talkback` | no |
+| Dictates with Ctrl+Shift+U and sends it | `match` | `queued` | yes, once |
+| Dictates with Ctrl+Shift+U without sending, then types and sends a different message | `no_match` | `held`, then `held_expired` in the log | no |
+| Dictates with Ctrl+Shift+U, presses Ctrl+Shift+Y, then sends | `no_match` | `not_talkback` | no |
+| Dictates with Ctrl+Shift+U, sends, presses Ctrl+Shift+Y while the agent works | `match` | `not_talkback` | no |
+| Tray set to Off, dictates with Ctrl+Shift+U and sends | `match` | `disabled` | no |
 
 ## FAQ
 
-**Can my agent speak without the user dictating?** No. Confab only speaks the answer to a message the user dictated with Ctrl+Shift+7, and has no mode or call that speaks every answer. This is deliberate: an agent can never start talking unless the user asked by voice.
+**Can my agent speak without the user dictating?** No. SanskritLearning only speaks the answer to a message the user dictated with Ctrl+Shift+U, and has no mode or call that speaks every answer. This is deliberate: an agent can never start talking unless the user asked by voice.
 
 **Does it work with a cloud-hosted backend?** Only for the part of your app that runs on the user's PC. The calls must come from a process on the same PC, signed in as the same Windows user: the service listens only on `127.0.0.1`, the token is readable only by that user, and requests from browsers are refused. If your agent's backend runs in the cloud, make the calls from its local part, such as a desktop app, a command-line client or a local server, when it sends the message and when it receives the final answer.
 
-**Can I choose the voice?** Not at the moment. Confab uses one fixed Kokoro voice for all agents.
+**Can I choose the voice?** Not at the moment. SanskritLearning uses one fixed Kokoro voice for all agents.
 
-**How do I turn the integration off without removing the code?** In your own code, skip the two calls behind a flag of your choice. They are optional for your agent, which works the same without them. For the user, the tray's **Off** mode silences every agent, and quitting Confab makes every call answer `unavailable` until it starts again.
+**How do I turn the integration off without removing the code?** In your own code, skip the two calls behind a flag of your choice. They are optional for your agent, which works the same without them. For the user, the tray's **Off** mode silences every agent, and quitting SanskritLearning makes every call answer `unavailable` until it starts again.

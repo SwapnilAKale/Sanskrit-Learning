@@ -33,7 +33,7 @@ function field(payload,name){let value=payload;for(const key of name.split('.'))
 function pick(payload,names=[]){for(const name of names){const value=field(payload,name);if(value!==undefined&&value!==null)return {name,value};}return null;}
 const ident=value=>typeof value==='string'&&value?value.slice(0,200):typeof value==='number'?String(value):undefined;
 function prompts(value){return (Array.isArray(value)?value:[value]).filter(p=>typeof p==='string'&&p).map(p=>p.slice(0,MAX_TEXT));}
-// Reads the payload and maps it to Confab events. Pure apart from the optional transcript read.
+// Reads the payload and maps it to SanskritLearning events. Pure apart from the optional transcript read.
 async function interpret(mapping,raw,{event:eventArg}={}){
  let payload;try{const text=String(raw).replace(/^﻿/,'');payload=JSON.parse(mapping.repairEncoding==='cp1252'?repairCp1252(text):text);}catch{payload=null;}
  if(!payload||typeof payload!=='object'||Array.isArray(payload))return {kind:null,found:{payload:'invalid'}};

@@ -1,5 +1,5 @@
 {
- "note": "The Node.js runtime that setup installs into %LOCALAPPDATA%\\Confab\\runtime\\node, so a user needs no Node.js of their own. Official build from nodejs.org; setup checks this SHA-256 (from the release's SHASUMS256.txt) and that node.exe carries a valid OpenJS Foundation signature.",
+ "note": "The Node.js runtime that setup installs into %LOCALAPPDATA%\\SanskritLearning\\runtime\\node, so a user needs no Node.js of their own. Official build from nodejs.org; setup checks this SHA-256 (from the release's SHASUMS256.txt) and that node.exe carries a valid OpenJS Foundation signature.",
  "node": {
   "version": "24.21.0",
   "url": "https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip",

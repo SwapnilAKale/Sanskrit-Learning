@@ -1,11 +1,12 @@
 'use strict';
 // Any change to a shortcut here or in its handlers must update the Hotkeys table at the top of
 // docs/DEVELOPER_GUIDE.md.
-const DEFAULT_HOTKEYS=Object.freeze({arm:'Ctrl+Shift+9',capture:'Ctrl+Shift+8',disarm:'Ctrl+Shift+0'});
+// The keys are the letters below Confab's number keys (6-0 -> Y-P), so both apps can run at once.
+const DEFAULT_HOTKEYS=Object.freeze({arm:'Ctrl+Shift+O',capture:'Ctrl+Shift+I',disarm:'Ctrl+Shift+P'});
 // Resident key set: a fourth action, talk-back, registered after the other three so their hotkey
-// ids stay 1-3, and Disarm on Ctrl+Shift+6.
-const DEFAULT_TALKBACK='Ctrl+Shift+7',RESIDENT_DISARM='Ctrl+Shift+6';
-// The arm action is off by default; "hotkeys": {"arm": "Ctrl+Shift+9"} in settings.json turns it on.
+// ids stay 1-3, and Disarm on Ctrl+Shift+Y.
+const DEFAULT_TALKBACK='Ctrl+Shift+U',RESIDENT_DISARM='Ctrl+Shift+Y';
+// The arm action is off by default; "hotkeys": {"arm": "Ctrl+Shift+O"} in settings.json turns it on.
 // "off" keeps the action's position (hotkey ids are positional) but registers nothing.
 const RESIDENT_ARM='off';
 function parseHotkeys(overrides={},{talkback=false}={}){

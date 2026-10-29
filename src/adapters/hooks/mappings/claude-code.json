@@ -10,8 +10,8 @@
   ],
   "install": {
     "plugin": {
-      "marketplace": "confab-local",
-      "name": "confab",
+      "marketplace": "sanskrit_learning-local",
+      "name": "sanskrit_learning",
       "path": "src/adapters/claude-code"
     }
   },

@@ -1,12 +1,12 @@
 'use strict';
-// Adds or removes Confab's own entries in a harness's hook configuration. Every other key and
+// Adds or removes SanskritLearning's own entries in a harness's hook configuration. Every other key and
 // hook is preserved. Our entries are recognised by their command, which runs adapters/hooks/adapter.cjs.
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {loadMapping}=require('./adapter.cjs');
 const ADAPTER=path.join(__dirname,'adapter.cjs');
 const OURS=/adapters[\\/]+hooks[\\/]+adapter\.cjs/;
 const isOurs=hook=>!!hook&&['command','powershell'].some(key=>typeof hook[key]==='string'&&OURS.test(hook[key]));
-// The Node.js that runs hooks: the runtime setup installed beside the app (%LOCALAPPDATA%\Confab\runtime\node),
+// The Node.js that runs hooks: the runtime setup installed beside the app (%LOCALAPPDATA%\SanskritLearning\runtime\node),
 // so the user needs no Node.js of their own; in a development checkout without one, node on PATH.
 function bundledNode(root=path.resolve(__dirname,'..','..','..')){const exe=path.join(root,'..','runtime','node','node.exe');return fs.existsSync(exe)?exe:null;}
 // The command is never quoted. Harnesses start it in incompatible ways: Antigravity splits it on spaces with
@@ -15,7 +15,7 @@ function bundledNode(root=path.resolve(__dirname,'..','..','..')){const exe=path
 // spaces uses its 8.3 short form, and if the volume has none, install stops with nothing changed.
 function spaceFree(file,shortPath,who){
  if(!/\s/.test(file))return file.replace(/\\/g,'/');
- const short=shortPath(file);if(!short||/\s/.test(short))throw Error('"'+file+'" contains a space and has no short (8.3) name, so '+who+' could not run it. Move the Confab folder to a path without spaces. Nothing was changed.');
+ const short=shortPath(file);if(!short||/\s/.test(short))throw Error('"'+file+'" contains a space and has no short (8.3) name, so '+who+' could not run it. Move the SanskritLearning folder to a path without spaces. Nothing was changed.');
  return short.replace(/\\/g,'/');
 }
 function command(harness,event,{adapter=ADAPTER,node=bundledNode(),shortPath=windowsShortPath}={}){
@@ -71,12 +71,12 @@ function add(config,spec,harness,options){
   list.push(spec.format==='flat'?{...Object.fromEntries((spec.commandKeys||['command']).map(key=>[key,command(harness,event,options)])),...settings}:{hooks:[entry(event,settings)]});
  }
 }
-// The backup holds the file as it was before Confab first touched it: it is written once and never replaced
+// The backup holds the file as it was before SanskritLearning first touched it: it is written once and never replaced
 // by a later reinstall. Uninstall removes it once the file matches that original again.
 function write(file,before,config){
  fs.mkdirSync(path.dirname(file),{recursive:true});
- if(before.exists&&!fs.existsSync(file+'.confab.bak'))fs.copyFileSync(file,file+'.confab.bak');
- const temp=file+'.confab.tmp';fs.writeFileSync(temp,JSON.stringify(config,null,2)+'\n');fs.renameSync(temp,file);
+ if(before.exists&&!fs.existsSync(file+'.sanskrit_learning.bak'))fs.copyFileSync(file,file+'.sanskrit_learning.bak');
+ const temp=file+'.sanskrit_learning.tmp';fs.writeFileSync(temp,JSON.stringify(config,null,2)+'\n');fs.renameSync(temp,file);
 }
 // Candidate paths: ~ and %VAR% are expanded, a "*" segment matches any directory entry,
 // and "PATH:name" searches PATH.
@@ -110,7 +110,7 @@ function checkSupport(harness,options={}){
  const checkable=req.marker?found.filter(file=>/\.(?:exe|js)$/i.test(file)):[];
  if(!checkable.length)return {ok:true,binary:found[0],verified:false};
  const supported=checkable.find(file=>{try{return contains(file,req.marker);}catch{return false;}});
- if(!supported)return {ok:false,message:'The installed '+req.name+' ('+found.join(', ')+') does not have the hook support Confab needs ('+req.needs+'). Nothing was changed.'};
+ if(!supported)return {ok:false,message:'The installed '+req.name+' ('+found.join(', ')+') does not have the hook support SanskritLearning needs ('+req.needs+'). Nothing was changed.'};
  return {ok:true,binary:supported,verified:true};
 }
 function hookSpec(harness){
@@ -118,7 +118,7 @@ function hookSpec(harness){
  if(!spec?.file&&!spec?.files)throw Error('No hook file installer for '+harness+'.');
  return spec;
 }
-// "files": whole files that only Confab owns (Cline's per-hook scripts, Goose's plugin folder).
+// "files": whole files that only SanskritLearning owns (Cline's per-hook scripts, Goose's plugin folder).
 // {{command:Event}} in a template becomes the hook command. A file of the same name that is not ours
 // stops the install with nothing changed; uninstall deletes only files that run our adapter.
 function ownFiles(spec,harness,{home=os.homedir(),...options}={}){
@@ -131,7 +131,7 @@ function ownFiles(spec,harness,{home=os.homedir(),...options}={}){
 }
 function installFiles(harness,spec,support,{dryRun,...options}){
  const files=ownFiles(spec,harness,options),foreign=files.filter(f=>f.ours===false);
- if(foreign.length)throw Error(foreign.map(f=>f.file).join(', ')+' already exists and is not a Confab file. Nothing was changed.');
+ if(foreign.length)throw Error(foreign.map(f=>f.file).join(', ')+' already exists and is not a SanskritLearning file. Nothing was changed.');
  if(!dryRun)for(const f of files){fs.mkdirSync(path.dirname(f.file),{recursive:true});fs.writeFileSync(f.file,f.text);}
  return {file:files.map(f=>f.file).join(', '),support,created:true,backup:null,replaced:files.filter(f=>f.ours).map(f=>path.basename(f.file)),added:files.map(f=>path.basename(f.file)),config:Object.fromEntries(files.map(f=>[f.file,f.text])),after:spec.after||null};
 }
@@ -148,7 +148,7 @@ function install(harness,{home,env,dryRun=false,check=true,...options}={}){
  const file=configFile(spec,home),before=read(file),config=structuredClone(before.config);
  const replaced=strip(config,spec);add(config,spec,harness,options);
  if(!dryRun)write(file,before,config);
- return {file,support,created:!before.exists,backup:before.exists?file+'.confab.bak':null,replaced,added:spec.format==='group'?[spec.group+': '+Object.keys(spec.events).join(', ')]:Object.keys(spec.events),config,after:spec.after||null};
+ return {file,support,created:!before.exists,backup:before.exists?file+'.sanskrit_learning.bak':null,replaced,added:spec.format==='group'?[spec.group+': '+Object.keys(spec.events).join(', ')]:Object.keys(spec.events),config,after:spec.after||null};
 }
 // True when a config holds nothing but what install itself adds to a new file (e.g. Cursor's "version": 1).
 function emptyConfig(config,spec){
@@ -178,12 +178,12 @@ function removeTrust(tomlFile,keys,dryRun){
 function uninstall(harness,{home,dryRun=false,...options}={}){
  const spec=hookSpec(harness);
  if(spec.files)return uninstallFiles(harness,spec,{home,dryRun,...options});
- const file=configFile(spec,home),before=read(file),backup=file+'.confab.bak';
+ const file=configFile(spec,home),before=read(file),backup=file+'.sanskrit_learning.bak';
  if(!before.exists)return {file,removed:[],missing:true,trust:[]};
  const trust=spec.trust?removeTrust(configFile({file:spec.trust},home),trustKeys(before.config,path.resolve(file).toLowerCase()).map(k=>k),dryRun):[];
  const config=structuredClone(before.config),removed=strip(config,spec);
  // The original: the backup without our entries (a reinstall may have backed up our own earlier version), or
- // nothing at all when Confab created the file.
+ // nothing at all when SanskritLearning created the file.
  let original=null;if(fs.existsSync(backup)){original=read(backup).config;strip(original,spec);}
  const created=emptyConfig(config,spec)&&(original===null||emptyConfig(original,spec));
  if(!dryRun){
@@ -195,10 +195,10 @@ function uninstall(harness,{home,dryRun=false,...options}={}){
 // After `claude plugin uninstall` and `claude plugin marketplace remove`, Claude Code keeps the plugin's cache
 // (every version ever installed), empty data folders, and usage counters in ~/.claude.json. These are removed here,
 // together with any entry the CLI left in its registry files. Only keys naming our plugin or marketplace are touched.
-function removeClaudeLeftovers({home=os.homedir(),plugin='confab',marketplace='confab-local',dryRun=false}={}){
+function removeClaudeLeftovers({home=os.homedir(),plugin='sanskrit_learning',marketplace='sanskrit_learning-local',dryRun=false}={}){
  // CLAUDE_CONFIG_DIR moves both the config folder and .claude.json (which then sits inside it).
  const configDir=process.env.CLAUDE_CONFIG_DIR;
- const done=[],claude=configDir||path.join(home,'.claude'),ours=key=>key===marketplace||key.startsWith(plugin+'@')||key.startsWith(plugin+':')||key.startsWith(plugin+'-');// confab, confab-observer, ...
+ const done=[],claude=configDir||path.join(home,'.claude'),ours=key=>key===marketplace||key.startsWith(plugin+'@')||key.startsWith(plugin+':')||key.startsWith(plugin+'-');// sanskrit_learning, sanskrit_learning-observer, ...
  const removeDir=dir=>{if(fs.existsSync(dir)){if(!dryRun)fs.rmSync(dir,{recursive:true,force:true});done.push(dir);}};
  removeDir(path.join(claude,'plugins','cache',marketplace));
  removeDir(path.join(claude,'plugins','marketplaces',marketplace));
@@ -212,7 +212,7 @@ function removeClaudeLeftovers({home=os.homedir(),plugin='confab',marketplace='c
   for(const where of containers){const obj=where?json[where]:json;if(!obj||typeof obj!=='object')continue;for(const key of Object.keys(obj))if(ours(key)){delete obj[key];removed.push((where?where+'.':'')+key);}
    // A container left empty here or by the claude CLI ("extraKnownMarketplaces": {}) held only our entry: drop it.
    if(where==='extraKnownMarketplaces'&&!Object.keys(obj).length){delete json[where];removed.push(where+' (empty)');}}
-  if(removed.length){if(!dryRun){const temp=file+'.confab.tmp';fs.writeFileSync(temp,JSON.stringify(json,null,2)+'\n');fs.renameSync(temp,file);}done.push(file+': '+removed.join(', '));}
+  if(removed.length){if(!dryRun){const temp=file+'.sanskrit_learning.tmp';fs.writeFileSync(temp,JSON.stringify(json,null,2)+'\n');fs.renameSync(temp,file);}done.push(file+': '+removed.join(', '));}
  }
  return done;
 }

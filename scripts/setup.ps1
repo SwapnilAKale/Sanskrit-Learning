@@ -1,12 +1,12 @@
-# Confab setup for the current Windows user. Run it with setup.cmd (no administrator rights, no settings changed).
-# Installs into %LOCALAPPDATA%\Confab: the app, its own Node.js runtime, the speech models (checked against
+# SanskritLearning setup for the current Windows user. Run it with setup.cmd (no administrator rights, no settings changed).
+# Installs into %LOCALAPPDATA%\SanskritLearning: the app, its own Node.js runtime, the speech models (checked against
 # assets\live-models.json), login startup and a Start menu entry. Safe to run again: it repairs or updates in place.
 #   -Agents ask|all|none|<id,id>   which detected agents to connect at the end (default: ask for each)
 param([string]$Agents = 'ask')
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $source = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$base = Join-Path $env:LOCALAPPDATA 'Confab'
+$base = Join-Path $env:LOCALAPPDATA 'SanskritLearning'
 $app = Join-Path $base 'app'
 $runtime = Join-Path $base 'runtime\node'
 $downloads = Join-Path $base 'downloads'
@@ -15,56 +15,58 @@ $node = Join-Path $runtime 'node.exe'
 $system32 = Join-Path $env:SystemRoot 'System32'
 
 . (Join-Path $PSScriptRoot 'windows-shell.ps1')
-# Installed from inside a packaged app's terminal, Confab would land in that app's private AppData.
+# Installed from inside a packaged app's terminal, SanskritLearning would land in that app's private AppData.
 $sandbox = Get-AppDataRedirect
 if ($sandbox) {
     $passOn = @(); if ($Agents -ne 'ask') { $passOn = @('-Agents', $Agents) }
     Restart-OutsideSandbox -Script $PSCommandPath -Arguments $passOn -App $sandbox
-    Write-Host ('A log of that run is written to ' + (Join-Path $env:TEMP 'confab-setup.log') + '.')
+    Write-Host ('A log of that run is written to ' + (Join-Path $env:TEMP 'sanskrit_learning-setup.log') + '.')
     exit 3
 }
 Remove-StaleLaunchers
-if (-not (Enter-SetupLock)) { Write-Host 'Confab setup or uninstall is already running in another window. Let it finish, then run setup again if needed.' -ForegroundColor Yellow; exit 4 }
-try { Start-Transcript -LiteralPath (Join-Path $env:TEMP 'confab-setup.log') -Force | Out-Null } catch { }
+if (-not (Enter-SetupLock)) { Write-Host 'SanskritLearning setup or uninstall is already running in another window. Let it finish, then run setup again if needed.' -ForegroundColor Yellow; exit 4 }
+try { Start-Transcript -LiteralPath (Join-Path $env:TEMP 'sanskrit_learning-setup.log') -Force | Out-Null } catch { }
 
 function Step($text) { Write-Host ''; Write-Host $text -ForegroundColor Cyan }
 function Ok($text) { Write-Host ('  OK  ' + $text) -ForegroundColor Green }
 function Info($text) { Write-Host ('      ' + $text) }
 # Every change is staged and swapped in whole, so a stop leaves each part either as it was or fully updated. Until setup
-# finishes, the installation is marked 'installing' and Confab does not start half-updated.
+# finishes, the installation is marked 'installing' and SanskritLearning does not start half-updated.
 $script:changing = $false
 function Fail($text) {
     Write-Host ''; Write-Host ('Setup stopped: ' + $text) -ForegroundColor Red
-    if ($script:changing) { Write-Host 'Each part of Confab is either as it was or fully updated, but Confab will not start until setup has finished. Fix the problem above and run setup again; it carries on where it stopped.' }
+    if ($script:changing) { Write-Host 'Each part of SanskritLearning is either as it was or fully updated, but SanskritLearning will not start until setup has finished. Fix the problem above and run setup again; it carries on where it stopped.' }
     else { Write-Host 'Nothing was changed. Fix the problem above and run setup again.' }
     exit 1
 }
 $staging = Join-Path $base 'staging'
 
-Write-Host 'Confab setup' -ForegroundColor White
+Write-Host 'SanskritLearning setup' -ForegroundColor White
 Write-Host ('Installing for ' + $env:USERNAME + ' into ' + $base)
 
 # --- 1. Prerequisites ---------------------------------------------------------------------------------------------
 Step '1/6  Checking this PC'
 $problems = @()
-if (-not [Environment]::Is64BitOperatingSystem) { $problems += 'Confab needs 64-bit Windows 10 or 11.' }
+if (-not [Environment]::Is64BitOperatingSystem) { $problems += 'SanskritLearning needs 64-bit Windows 10 or 11.' }
 $build = [Environment]::OSVersion.Version.Build
-if ([Environment]::OSVersion.Version.Major -lt 10 -or $build -lt 17763) { $problems += ('Confab needs Windows 10 version 1809 or later (this PC: build ' + $build + ').') }
+if ([Environment]::OSVersion.Version.Major -lt 10 -or $build -lt 17763) { $problems += ('SanskritLearning needs Windows 10 version 1809 or later (this PC: build ' + $build + ').') }
 else { Ok ('Windows build ' + $build + ', 64-bit') }
 foreach ($tool in @('tar.exe', 'curl.exe', 'robocopy.exe', 'reg.exe')) { if (-not (Test-Path -LiteralPath (Join-Path $system32 $tool))) { $problems += ('Windows is missing ' + $tool + ' (normally in ' + $system32 + ').') } }
 $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if ($admin) { $problems += 'This window is running as administrator. Open a normal PowerShell window (not "Run as administrator") and run setup there, so Confab is installed for your own account.' }
+if ($admin) { $problems += 'This window is running as administrator. Open a normal PowerShell window (not "Run as administrator") and run setup there, so SanskritLearning is installed for your own account.' }
 else { Ok 'Running as a standard user (no administrator rights needed)' }
 $drive = (Get-Item -LiteralPath $env:LOCALAPPDATA).PSDrive
 $freeGb = [math]::Round($drive.Free / 1GB, 1)
-$needGb = 3.0
-if (Test-Path -LiteralPath (Join-Path $app 'assets\models')) { $needGb = 0.5 }
+# Models are downloaded beside the installation, then moved in: about 3.8 GB, needed twice at the peak.
+$needGb = 8.0
+if (Test-Path -LiteralPath (Join-Path $app 'assets\models\indic-parler-tts-onnx')) { $needGb = 0.5 }
+elseif (Test-Path -LiteralPath (Join-Path $app 'assets\models')) { $needGb = 6.0 }
 if ($drive.Free / 1GB -lt $needGb) { $problems += ('Not enough free disk space on ' + $drive.Name + ': ' + $freeGb + ' GB free, about ' + $needGb + ' GB needed.') }
 else { Ok ('Disk space: ' + $freeGb + ' GB free on ' + $drive.Name + ':') }
-if (-not (Test-Path -LiteralPath (Join-Path $source 'assets\live-models.json'))) { $problems += ('This folder is not a complete copy of Confab: ' + $source) }
+if (-not (Test-Path -LiteralPath (Join-Path $source 'assets\live-models.json'))) { $problems += ('This folder is not a complete copy of SanskritLearning: ' + $source) }
 $mics = @(Get-CimInstance Win32_PnPEntity -Filter "PNPClass='AudioEndpoint'" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'Microphone|Mic|Headset|Input|Array' })
 if ($mics.Count) { Ok ('Microphone: ' + $mics[0].Name) } else { Info 'No microphone found. Setup continues; plug one in before dictating.' }
-if ($problems.Count) { foreach ($p in $problems) { Write-Host ('  X   ' + $p) -ForegroundColor Red }; Fail 'this PC is missing what Confab needs (listed above).' }
+if ($problems.Count) { foreach ($p in $problems) { Write-Host ('  X   ' + $p) -ForegroundColor Red }; Fail 'this PC is missing what SanskritLearning needs (listed above).' }
 
 New-Item -ItemType Directory -Path $base -Force | Out-Null
 Remove-InterruptedLeftovers $base
@@ -81,27 +83,27 @@ foreach ($file in @('uninstall.ps1', 'windows-shell.ps1')) { Copy-Item -LiteralP
 # The icon sits with the uninstaller, so Settings > Apps and the uninstall windows keep it until the very end.
 Copy-Item -LiteralPath (Join-Path $source 'assets\app.ico') -Destination $newUninstaller -Force
 try { Install-Staged @(@{ Staged = $newUninstaller; Target = $uninstaller }) } catch { Fail ('could not put the uninstaller in place: ' + $_.Exception.Message) }
-$uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Confab'
+$uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\SanskritLearning'
 New-Item -Path $uninstallKey -Force | Out-Null
 $version = (Get-Content -LiteralPath (Join-Path $source 'package.json') -Raw | ConvertFrom-Json).version
 $uninstallCmd = '"' + (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') + '" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $uninstaller 'uninstall.ps1') + '" -Gui'
-foreach ($pair in @(@('DisplayName', 'Confab'), @('DisplayVersion', $version), @('Publisher', 'Confab'), @('InstallLocation', $base), @('UninstallString', $uninstallCmd), @('DisplayIcon', (Join-Path $uninstaller 'app.ico')))) {
+foreach ($pair in @(@('DisplayName', 'SanskritLearning'), @('DisplayVersion', $version), @('Publisher', 'SanskritLearning'), @('InstallLocation', $base), @('UninstallString', $uninstallCmd), @('DisplayIcon', (Join-Path $uninstaller 'app.ico')))) {
     New-ItemProperty -LiteralPath $uninstallKey -Name $pair[0] -Value $pair[1] -PropertyType String -Force | Out-Null
 }
 foreach ($flag in @('NoModify', 'NoRepair')) { New-ItemProperty -LiteralPath $uninstallKey -Name $flag -Value 1 -PropertyType DWord -Force | Out-Null }
 
-# Stop a running Confab first, so its files can be updated.
+# Stop a running SanskritLearning first, so its files can be updated.
 $endpointFile = Join-Path $profileDir 'endpoint.json'
 if (Test-Path -LiteralPath $endpointFile) {
     try {
         $running = Get-Content -LiteralPath $endpointFile -Raw | ConvertFrom-Json
         $process = Get-CimInstance Win32_Process -Filter ('ProcessId=' + [int]$running.pid) -ErrorAction SilentlyContinue
-        if ($process -and $process.CommandLine -like '*resident.cjs*') { Info 'Stopping the running Confab while it is updated...'; Stop-Process -Id $process.ProcessId -Force; Start-Sleep -Milliseconds 800 }
+        if ($process -and $process.CommandLine -like '*resident.cjs*') { Info 'Stopping the running SanskritLearning while it is updated...'; Stop-Process -Id $process.ProcessId -Force; Start-Sleep -Milliseconds 800 }
     } catch { }
 }
 
 # --- 2. Node.js runtime -------------------------------------------------------------------------------------------
-Step '2/6  Node.js runtime (official build, used only by Confab)'
+Step '2/6  Node.js runtime (official build, used only by SanskritLearning)'
 $pin = (Get-Content -LiteralPath (Join-Path $source 'assets\runtime.json') -Raw | ConvertFrom-Json).node
 function Test-Runtime {
     if (-not (Test-Path -LiteralPath $node)) { return $false }
@@ -143,7 +145,7 @@ else {
 }
 
 # --- 3. App files and libraries -----------------------------------------------------------------------------------
-Step '3/6  Confab app'
+Step '3/6  SanskritLearning app'
 if ($source.TrimEnd('\') -ieq $app.TrimEnd('\')) { Ok 'Running from the installed app: repairing in place' }
 else {
     # The new code is copied beside the installation first, then swapped in as a whole: a copy that stops halfway
@@ -168,11 +170,11 @@ else {
     Ok ('Copied to ' + $app)
 }
 $lockHash = (Get-FileHash -LiteralPath (Join-Path $app 'package-lock.json') -Algorithm SHA256).Hash
-$lockStamp = Join-Path $app 'node_modules\.confab-lock'
+$lockStamp = Join-Path $app 'node_modules\.sanskrit_learning-lock'
 $haveModules = (Test-Path -LiteralPath $lockStamp) -and ((Get-Content -LiteralPath $lockStamp -Raw).Trim() -eq $lockHash)
 if ($haveModules) { Ok 'Libraries up to date' }
 else {
-    Info 'Installing the two libraries (koffi, sherpa-onnx-node) from npm, checked against package-lock.json...'
+    Info 'Installing the three libraries (koffi, sherpa-onnx-node, onnxruntime-node) from npm, checked against package-lock.json...'
     # Installed into a staging folder and swapped in only when complete: npm ci starts by deleting node_modules, so
     # running it in place would leave no libraries at all if the download failed.
     $env:Path = $runtime + ';' + $env:Path
@@ -185,7 +187,7 @@ else {
     try { & $node (Join-Path $runtime 'node_modules\npm\bin\npm-cli.js') ci --omit=dev --no-audit --no-fund --no-update-notifier --loglevel=error --cache $cache }
     finally { Pop-Location }
     if ($LASTEXITCODE -ne 0) { Fail 'npm could not install the libraries (the previous ones are kept). Check the internet connection.' }
-    Set-Content -LiteralPath (Join-Path $newModules 'node_modules\.confab-lock') -Value $lockHash
+    Set-Content -LiteralPath (Join-Path $newModules 'node_modules\.sanskrit_learning-lock') -Value $lockHash
     try { Install-Staged @(@{ Staged = (Join-Path $newModules 'node_modules'); Target = (Join-Path $app 'node_modules') }) }
     catch { Fail ('could not put the new libraries in place (the previous ones are kept): ' + $_.Exception.Message) }
     Remove-Item -LiteralPath $newModules, $cache -Recurse -Force -ErrorAction SilentlyContinue
@@ -193,14 +195,14 @@ else {
 }
 
 # --- 4. Speech models ---------------------------------------------------------------------------------------------
-Step '4/6  Speech models (about 1 GB on first install; checked against assets\live-models.json)'
+Step '4/6  Speech models (about 3.8 GB on first install; checked against assets\live-models.json)'
 & $node (Join-Path $app 'scripts\models.cjs') fetch
 if ($LASTEXITCODE -ne 0) { Fail 'the speech models could not be downloaded or checked (see above). Run setup again to resume.' }
 Remove-Item -LiteralPath $downloads -Recurse -Force -ErrorAction SilentlyContinue
 
 Remove-Item -LiteralPath $staging -Recurse -Force -ErrorAction SilentlyContinue
 
-# Every file is in place: from here Confab may start.
+# Every file is in place: from here SanskritLearning may start.
 Set-InstallState $base 'ready'; $script:changing = $false
 
 # --- 5. Background service, login startup, Start menu --------------------------------------------------------------
@@ -215,8 +217,8 @@ for ($i = 0; $i -lt 40 -and -not $healthy; $i++) {
     $health = & $node -e "require(process.argv[1]).status().then(s=>{if(s)console.log(s.version);process.exit(s?0:1)})" (Join-Path $app 'src\pc\client.cjs') 2>$null
     $healthy = ($LASTEXITCODE -eq 0)
 }
-if ($healthy) { Ok ('Confab ' + $health + ' is running. Its icon is in the taskbar tray (it may be under the ^ arrow).') }
-else { Write-Host '  !   Confab did not answer yet. If no tray icon appears, open the tray menu > Diagnose, or see resident-error.log in %LOCALAPPDATA%\Confab\resident.' -ForegroundColor Yellow }
+if ($healthy) { Ok ('SanskritLearning ' + $health + ' is running. Its icon is in the taskbar tray (it may be under the ^ arrow).') }
+else { Write-Host '  !   SanskritLearning did not answer yet. If no tray icon appears, open the tray menu > Diagnose, or see resident-error.log in %LOCALAPPDATA%\SanskritLearning\resident.' -ForegroundColor Yellow }
 
 # --- 6. Agents -----------------------------------------------------------------------------------------------------
 Step '6/6  Coding agents (for talk-back)'
@@ -243,7 +245,7 @@ foreach ($agent in $found) {
 }
 
 Write-Host ''
-Write-Host 'Confab is installed.' -ForegroundColor Green
-Write-Host '  Ctrl+Shift+8  dictate          Ctrl+Shift+7  dictate with talk-back          Ctrl+Shift+6  cancel'
+Write-Host 'SanskritLearning is installed.' -ForegroundColor Green
+Write-Host '  Ctrl+Shift+I  dictate          Ctrl+Shift+U  dictate with talk-back          Ctrl+Shift+Y  cancel'
 Write-Host '  Tray icon menu: Connect agents, Diagnose, Uninstall.'
-Write-Host '  To remove it later: tray menu > Uninstall Confab, or Settings > Apps > Installed apps > Confab > Uninstall.'
+Write-Host '  To remove it later: tray menu > Uninstall SanskritLearning, or Settings > Apps > Installed apps > SanskritLearning > Uninstall.'

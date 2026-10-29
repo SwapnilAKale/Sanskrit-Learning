@@ -7,7 +7,7 @@
 //   minSilenceSeconds  silence that ends a speech segment (turns end later, after turnSettle seconds of silence)
 const DEFAULTS=Object.freeze({threshold:0.3,preSpeechSeconds:0.75,minSilenceSeconds:0.5});
 const RANGES={threshold:[0.05,0.95],preSpeechSeconds:[0,2],minSilenceSeconds:[0.1,2]};
-const ENV='CONFAB_VAD';
+const ENV='SANSKRIT_LEARNING_VAD';
 function resolve(value){
  const v=value&&typeof value==='object'&&!Array.isArray(value)?value:{},out={};
  for(const [key,def] of Object.entries(DEFAULTS)){const n=v[key],[lo,hi]=RANGES[key];out[key]=typeof n==='number'&&Number.isFinite(n)?Math.min(hi,Math.max(lo,n)):def;}

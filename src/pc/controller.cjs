@@ -19,8 +19,8 @@ class PcController {
   // Focus left (or returned to) the box where dictation started; recording continues either way.
   input.on('focus',e=>{const c=this.capture;if(c&&this.state==='recording'){c.focusMoved=!e.inTarget;this.refreshBadge();}});
   engine.on?.('state',()=>this.refreshBadge());
-  input.on('error',()=>this.failure('Dictation input failed. Quit and reopen Confab from Windows Startup.'));
-  input.on('hotkeys',e=>{if(e.missing?.length)this.shortcutConflict(e.missing);else if(e.restored?.length)this.failure('Confab shortcut available again: '+e.restored.join(', ')+'.');});
+  input.on('error',()=>this.failure('Dictation input failed. Quit and reopen SanskritLearning from Windows Startup.'));
+  input.on('hotkeys',e=>{if(e.missing?.length)this.shortcutConflict(e.missing);else if(e.restored?.length)this.failure('SanskritLearning shortcut available again: '+e.restored.join(', ')+'.');});
   audio.on('error',e=>this.failCapture(e));
  }
  async ready(){return this.readying||(this.readying=this.start());}
@@ -47,14 +47,14 @@ class PcController {
  refreshBadge(){const state=this.badgeState(),key=JSON.stringify(state);if(key===this.badgeKey)return;this.badgeKey=key;try{this.notify.badge?.(state);}catch{}}
  flashBadge(name,ms,reason=null){clearTimeout(this.flashTimer);this.flash=name;this.flashReason=reason;this.refreshBadge();this.flashTimer=setTimeout(()=>{this.flash=null;this.flashReason=null;this.refreshBadge();},ms);this.flashTimer.unref?.();}
  // Another process holds these global shortcuts.
- shortcutConflict(labels){this.failure('Confab could not register '+labels.join(', ')+': another program is using '+(labels.length>1?'them':'it')+', for example another dictation tool. Confab takes '+(labels.length>1?'them':'it')+' back automatically when free.');}
+ shortcutConflict(labels){this.failure('SanskritLearning could not register '+labels.join(', ')+': another program is using '+(labels.length>1?'them':'it')+', for example another dictation tool. SanskritLearning takes '+(labels.length>1?'them':'it')+' back automatically when free.');}
  failure(message){this.lastError=message;this.notificationAccepted=this.notify.failure(message);}
  cancelSpeech(){this.generation++;if(this.lastSpeech&&['queued','synthesizing','playing'].includes(this.lastSpeech.state))this.lastSpeech={state:'cancelled',reason:'new_input_or_stop'};this.audio.stopPlayback();this.refreshBadge();}
  async startCapture({talkback=false}={}){
   // A press during startup waits for it instead of being dropped.
   if(this.state==='loading'&&this.readying)await this.readying.catch(()=>{});
   if(this.closed||this.paused){await this.input.request('capture-reset');return;}
-  if(this.state!=='ready'){await this.input.request('capture-reset');this.rejectPress(this.state==='transcribing'?'Still transcribing the previous dictation. Try again in a moment.':'Confab is busy. Try again in a moment.');return;}
+  if(this.state!=='ready'){await this.input.request('capture-reset');this.rejectPress(this.state==='transcribing'?'Still transcribing the previous dictation. Try again in a moment.':'SanskritLearning is busy. Try again in a moment.');return;}
   this.cancelSpeech();const capture=this.capture={id:crypto.randomUUID(),parts:[],samples:0,peak:0,sumSquares:0,talkback,pressedAt:Date.now()};this.state='recording';this.metrics.captures++;this.flash=null;this.refreshBadge();
   // The badge shows Starting at once. The microphone opens now; the recording colour and the start
   // cue come together when capture is really live. Audio is buffered while models load and the
@@ -101,7 +101,7 @@ class PcController {
   this.pendingDraft=text;let saved=false;try{this.saveDraft(text);saved=true;}catch{}this.metrics.fallbacks++;let copied=false;
   for(let i=0;i<5&&!copied;i++){try{this.input.api.setClipboard(text);copied=true;}catch{await delay(100);}}
   if(this.capture&&this.state==='transcribing'){this.capture=null;this.state='ready';}void this.cue('errorCue');this.flashBadge('not-pasted',3000);
-  this.failure(prefix+(copied?' It is on the clipboard, ready to paste.':saved?' Clipboard is busy. Your draft is saved in your Confab profile drafts folder.':' Clipboard and draft storage both failed. Keep Confab running and check disk space.'));
+  this.failure(prefix+(copied?' It is on the clipboard, ready to paste.':saved?' Clipboard is busy. Your draft is saved in your SanskritLearning profile drafts folder.':' Clipboard and draft storage both failed. Keep SanskritLearning running and check disk space.'));
  }
  failCapture(error){const capture=this.capture;this.capture=null;clearTimeout(capture?.limit);clearTimeout(capture?.deadline);
   try{Promise.resolve(this.audio.stop()).catch(()=>{});}catch{}if(capture)this.engine.cancel(capture.id);void this.input.request('capture-reset');if(!this.closed)this.state='ready';

@@ -1,5 +1,5 @@
 'use strict';
-// The agents Confab can connect to, for setup, the tray's "Connect agents" window, Diagnose and uninstall.
+// The agents SanskritLearning can connect to, for setup, the tray's "Connect agents" window, Diagnose and uninstall.
 // Connecting runs the same installers as scripts/agent-hooks.cjs (src/adapters/hooks/install.cjs, and Claude Code's
 // own plugin commands), without a terminal. Each connection is recorded in the profile (connections.json) with its
 // time, so that an agent still running from before it was connected is reported as needing a restart.
@@ -67,7 +67,7 @@ function connectClaude({root=ROOT,home,env}={}){
  }
  let after=claudeState({home,root});
  if(after.installed&&!after.enabled){const r=runClaude(exe,['plugin','enable',id]);lines.push('claude plugin enable '+id+(r.out?': '+r.out.split(/\r?\n/).pop():''));after=claudeState({home,root});}
- if(!after.installed||!after.pointsHere)throw Error('Claude Code did not register the Confab plugin.\n'+lines.join('\n'));
+ if(!after.installed||!after.pointsHere)throw Error('Claude Code did not register the SanskritLearning plugin.\n'+lines.join('\n'));
  return {lines};
 }
 function disconnectClaude({root=ROOT,home,env}={}){
@@ -103,7 +103,7 @@ function present(agent,options){
 function status(id,{root=ROOT,home,env,profile=profileApi.profileDir(),processes,records=readRecords(profile)}={}){
  const agent=byId(id),out={id,name:agent.name,installed:false,connected:false,state:'not-installed',detail:'',step:null,restart:null};
  let connected=false,stale=false;
- if(id==='claude-code'){const s=claudeState({home,root});connected=s.installed;stale=s.installed&&!s.pointsHere;if(s.installed&&!s.enabled){out.state='needs-action';out.detail='The Confab plugin is disabled in Claude Code. Click Connect to enable it.';}}
+ if(id==='claude-code'){const s=claudeState({home,root});connected=s.installed;stale=s.installed&&!s.pointsHere;if(s.installed&&!s.enabled){out.state='needs-action';out.detail='The SanskritLearning plugin is disabled in Claude Code. Click Connect to enable it.';}}
  else{
   let st;try{st=hooks.status(id,{home});}catch(e){out.detail=e.message;}
   connected=!!st?.installed?.length;
@@ -114,7 +114,7 @@ function status(id,{root=ROOT,home,env,profile=profileApi.profileDir(),processes
  if(out.state==='needs-action')return out;
  if(!where&&!connected){out.detail=agent.name+' was not found on this PC.';return out;}
  if(!connected){out.state='not-connected';out.detail='Installed, not connected.';return out;}
- if(stale){out.state='needs-action';out.detail='Connected to a different Confab folder. Click Connect to point it at this installation.';return out;}
+ if(stale){out.state='needs-action';out.detail='Connected to a different SanskritLearning folder. Click Connect to point it at this installation.';return out;}
  if(id==='codex'&&!codexTrusted({home})){out.state='needs-action';out.detail='Codex has not trusted the hook yet, so it will not run.';out.step=agent.step;return out;}
  // A hook call logged since connecting proves the agent runs the hook, whatever was running before.
  const record=records[id],called=lastHookCalls(profile)[id];
@@ -152,15 +152,15 @@ function disconnect(id,{root=ROOT,home,env,profile=profileApi.profileDir()}={}){
  if(id==='claude-code')({lines}=disconnectClaude({root,home,env}));
  else{
   const r=hooks.uninstall(id,{home});
-  if(r.missing||(!r.removed.length&&!r.deleted))lines.push('No Confab hook in '+r.file+'.');
-  else lines.push((r.deleted?'Deleted '+r.file+' (Confab had created it)':'Removed the Confab hook from '+r.file+(r.matchesOriginal?'; it matches its original again':'; it differs from its pre-install backup, which was kept beside it')));
+  if(r.missing||(!r.removed.length&&!r.deleted))lines.push('No SanskritLearning hook in '+r.file+'.');
+  else lines.push((r.deleted?'Deleted '+r.file+' (SanskritLearning had created it)':'Removed the SanskritLearning hook from '+r.file+(r.matchesOriginal?'; it matches its original again':'; it differs from its pre-install backup, which was kept beside it')));
   for(const line of r.trust||[])if(/^\[/.test(line))lines.push('Removed Codex trust entry '+line);
   if(r.removed?.length&&!r.deleted&&!r.matchesOriginal)ok=false;
  }
  const records=readRecords(profile);if(records[id]){delete records[id];writeRecords(profile,records);}
  return {id,ok,lines};
 }
-// Before uninstall changes anything: every agent file that holds a Confab entry must be readable and writable
+// Before uninstall changes anything: every agent file that holds a SanskritLearning entry must be readable and writable
 // (valid JSON, not read-only, not locked by another program). Returns [{id, name, file, problem}]; empty when all are.
 function disconnectProblems({home=os.homedir()}={}){
  const problems=[];
@@ -177,7 +177,7 @@ function disconnectProblems({home=os.homedir()}={}){
  const claudeDir=process.env.CLAUDE_CONFIG_DIR||path.join(home,'.claude');
  for(const file of [path.join(claudeDir,'settings.json'),path.join(claudeDir,'plugins','installed_plugins.json'),path.join(claudeDir,'plugins','known_marketplaces.json')]){
   let text;try{text=fs.readFileSync(file,'utf8');}catch{continue;}
-  if(!text.includes('confab'))continue;
+  if(!text.includes('sanskrit_learning'))continue;
   try{JSON.parse(text.replace(/^\uFEFF/,''));}catch{problems.push({id:'claude-code',name:'Claude Code',file,problem:'it is not valid JSON'});continue;}
   const p=writable(file);if(p)problems.push({id:'claude-code',name:'Claude Code',file,problem:p});
  }

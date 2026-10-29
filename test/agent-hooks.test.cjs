@@ -83,7 +83,7 @@ test('every mapping is consistent: known kinds, and installers register only map
  }
 });
 const OTHER={type:'command',command:'C:\\tools\\audit.exe --log'};
-const options={adapter:'C:\\Confab App\\src\\adapters\\hooks\\adapter.cjs',check:false,shortPath:p=>p.replace('Confab App','CONFAB~1')};
+const options={adapter:'C:\\SanskritLearning App\\src\\adapters\\hooks\\adapter.cjs',check:false,shortPath:p=>p.replace('SanskritLearning App','SANSKRIT_LEARNING~1')};
 test('install never asks the user to change the harness: missing or unsupported harness stops with nothing changed',t=>{
  const home=temp(t,'support'),local=path.join(home,'AppData','Local'),env={LOCALAPPDATA:local,APPDATA:path.join(home,'Roaming'),PATH:''};
  const target=path.join(home,'.gemini','config','hooks.json');fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,'{"mine":{}}');
@@ -91,11 +91,11 @@ test('install never asks the user to change the harness: missing or unsupported 
  assert.throws(attempt,/Antigravity was not found.*Nothing was changed/);
  const bin=path.join(local,'Programs','antigravity','resources','bin');fs.mkdirSync(bin,{recursive:true});
  fs.writeFileSync(path.join(bin,'language_server.exe'),Buffer.concat([Buffer.alloc(9*1048576-3),Buffer.from('old build')]));
- assert.throws(attempt,/does not have the hook support Confab needs.*Nothing was changed/);
- assert.equal(fs.readFileSync(target,'utf8'),'{"mine":{}}');assert.equal(fs.existsSync(target+'.confab.bak'),false);
+ assert.throws(attempt,/does not have the hook support SanskritLearning needs.*Nothing was changed/);
+ assert.equal(fs.readFileSync(target,'utf8'),'{"mine":{}}');assert.equal(fs.existsSync(target+'.sanskrit_learning.bak'),false);
  // The marker straddles the 8 MiB read boundary on purpose.
  fs.writeFileSync(path.join(bin,'language_server.exe'),Buffer.concat([Buffer.alloc(8*1048576-5),Buffer.from('"transcriptPath"')]));
- const r=attempt();assert.deepEqual([r.support.ok,r.support.verified],[true,true]);assert.ok(JSON.parse(fs.readFileSync(target,'utf8'))['confab']);
+ const r=attempt();assert.deepEqual([r.support.ok,r.support.verified],[true,true]);assert.ok(JSON.parse(fs.readFileSync(target,'utf8'))['sanskrit_learning']);
  // A glob candidate (Codex app bundles), and a launcher script that cannot be checked is accepted unverified.
  const codex=path.join(local,'OpenAI','Codex','bin','abc123');fs.mkdirSync(codex,{recursive:true});fs.writeFileSync(path.join(codex,'codex.exe'),'... last_assistant_message ...');
  assert.equal(installer.checkSupport('codex',{home,env}).verified,true);
@@ -112,12 +112,12 @@ for(const [harness,file,original] of [
   fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,JSON.stringify(original));
   const first=installer.install(harness,{home,...options});assert.equal(first.file,target);
   const installed=JSON.parse(fs.readFileSync(target,'utf8'));
-  assert.equal(fs.readFileSync(target+'.confab.bak','utf8'),JSON.stringify(original));
+  assert.equal(fs.readFileSync(target+'.sanskrit_learning.bak','utf8'),JSON.stringify(original));
   // Installing twice replaces our entry instead of duplicating it.
   installer.install(harness,{home,...options});assert.deepEqual(JSON.parse(fs.readFileSync(target,'utf8')),installed);
   const ours=JSON.stringify(installed).match(/adapters\/hooks\/adapter\.cjs/g)||[];
   assert.equal(ours.length,Object.keys(loadMapping(harness).install.events).length);
-  assert.match(installer.command(harness,'Stop',options),/^node C:\/CONFAB~1\/src\/adapters\/hooks\/adapter\.cjs /,'never quoted; a path with spaces uses its short name');
+  assert.match(installer.command(harness,'Stop',options),/^node C:\/SANSKRIT_LEARNING~1\/src\/adapters\/hooks\/adapter\.cjs /,'never quoted; a path with spaces uses its short name');
   assert.deepEqual(installer.status(harness,{home}).installed.length>0,true);
   const removed=installer.uninstall(harness,{home});assert.ok(removed.removed.length);
   assert.deepEqual(JSON.parse(fs.readFileSync(target,'utf8')),original);
@@ -153,7 +153,7 @@ test('install creates a missing hook file and refuses to rewrite invalid JSON',t
  assert.deepEqual(Object.keys(config.hooks),['UserPromptSubmit','Stop','SessionEnd']);
  assert.equal(config.hooks.Stop[0].hooks[0].async,true);assert.equal(config.hooks.UserPromptSubmit[0].hooks[0].async,true,'never blocks the turn');assert.equal(config.hooks.SessionEnd[0].hooks[0].async,undefined);
  const cursor=installer.install('cursor',{home,...options});assert.equal(JSON.parse(fs.readFileSync(cursor.file,'utf8')).version,1);
- const ag=installer.install('antigravity',{home,...options});assert.match(JSON.parse(fs.readFileSync(ag.file,'utf8'))['confab'].Stop[0].command,/^node C:\/CONFAB~1\/src\/adapters\/hooks\/adapter\.cjs antigravity Stop$/,'no quotes: Antigravity passes them through literally');
+ const ag=installer.install('antigravity',{home,...options});assert.match(JSON.parse(fs.readFileSync(ag.file,'utf8'))['sanskrit_learning'].Stop[0].command,/^node C:\/SANSKRIT_LEARNING~1\/src\/adapters\/hooks\/adapter\.cjs antigravity Stop$/,'no quotes: Antigravity passes them through literally');
  fs.writeFileSync(r.file,'{ broken');assert.throws(()=>installer.install('codex',{home,...options}),/not valid JSON\. Nothing was changed/);
  assert.equal(fs.readFileSync(r.file,'utf8'),'{ broken');
  assert.throws(()=>installer.install('claude-code',{home}),/No hook file installer/);
@@ -161,7 +161,7 @@ test('install creates a missing hook file and refuses to rewrite invalid JSON',t
 // Each installed command, run the way that harness starts it (docs and source, Oct 2026), against a stand-in
 // service. Unicode text checks the encoding through every shell.
 test('every installed hook runs exactly as its harness starts it, and Unicode text arrives intact',{skip:process.platform!=='win32'},async t=>{
- const home=temp(t,'as-run'),local=path.join(home,'Local'),profile=path.join(local,'Confab','resident');profileApi.initialize(profile);
+ const home=temp(t,'as-run'),local=path.join(home,'Local'),profile=path.join(local,'SanskritLearning','resident');profileApi.initialize(profile);
  const received=[];const server=http.createServer(async(req,res)=>{let body='';for await(const part of req)body+=part;received.push(JSON.parse(body));res.end('{"accepted":true,"reason":"ok"}');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));fs.writeFileSync(path.join(profile,'endpoint.json'),JSON.stringify({port:server.address().port}));t.after(()=>{server.closeAllConnections();server.close();});
  const env={...process.env,LOCALAPPDATA:local},TEXT='Café, 5 km — ✓ done';
@@ -175,8 +175,8 @@ test('every installed hook runs exactly as its harness starts it, and Unicode te
   ['windsurf (powershell -Command)',['powershell.exe','-Command',json('.codeium/windsurf/hooks.json').hooks.pre_user_prompt[0].powershell],{agent_action_name:'pre_user_prompt',trajectory_id:'ws',tool_info:{user_prompt:TEXT}},''],
   ['cline (powershell -File script)',[...ps,'-ExecutionPolicy','Bypass','-File',path.join(home,'Documents','Cline','Hooks','UserPromptSubmit.ps1')],{hookName:'UserPromptSubmit',taskId:'cl',userPromptSubmit:{prompt:TEXT}},'{"cancel":false,"contextModification":"","errorMessage":""}'],
   ['continue (execFile cmd.exe /c)',['cmd.exe','/c',json('.continue/settings.json').hooks.UserPromptSubmit[0].hooks[0].command],{hook_event_name:'UserPromptSubmit',session_id:'cn',prompt:TEXT},''],
-  ...(fs.existsSync(sh)?[['goose (sh -c)',[sh,'-c',json('.agents/plugins/confab/hooks/hooks.json').hooks.UserPromptSubmit[0].hooks[0].command],{event:'UserPromptSubmit',session_id:'gs',message:TEXT},'']]:[]),
-  ['antigravity (split on spaces, no shell)',json('.gemini/config/hooks.json')['confab'].Stop[0].command.split(' '),null,'{}']];
+  ...(fs.existsSync(sh)?[['goose (sh -c)',[sh,'-c',json('.agents/plugins/sanskrit_learning/hooks/hooks.json').hooks.UserPromptSubmit[0].hooks[0].command],{event:'UserPromptSubmit',session_id:'gs',message:TEXT},'']]:[]),
+  ['antigravity (split on spaces, no shell)',json('.gemini/config/hooks.json')['sanskrit_learning'].Stop[0].command.split(' '),null,'{}']];
  for(const [name,[exe,...args],payload,stdout,verbatim] of runs){
   if(!payload)continue;// antigravity is covered with a transcript by its own test above
   const before=received.length;
@@ -195,7 +195,7 @@ test('first complete JSON object is found without waiting for end of input',()=>
  assert.equal(firstJsonEnd('{"a":'),-1);assert.equal(firstJsonEnd(''),-1);
 });
 test('Codex spawn reproduced, stdin left open: the hook reaches the service and exits within its deadline',{skip:process.platform!=='win32'},async t=>{
- const home=temp(t,'codex-open'),local=path.join(home,'Local'),profile=path.join(local,'Confab','resident');profileApi.initialize(profile);
+ const home=temp(t,'codex-open'),local=path.join(home,'Local'),profile=path.join(local,'SanskritLearning','resident');profileApi.initialize(profile);
  const received=[];const server=http.createServer(async(req,res)=>{let body='';for await(const part of req)body+=part;received.push(JSON.parse(body));res.end('{"accepted":true,"reason":"ok"}');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));fs.writeFileSync(path.join(profile,'endpoint.json'),JSON.stringify({port:server.address().port}));t.after(()=>{server.closeAllConnections();server.close();});
  installer.install('codex',{home,check:false});
@@ -217,7 +217,7 @@ test('Codex spawn reproduced, stdin left open: the hook reaches the service and 
 // no BOM) and the command is rewritten to read it through PowerShell, which adds a BOM and, in Windows PowerShell
 // 5.1, decodes the file as Windows-1252. The hook must still deliver the original text, quickly.
 test('Cursor launch reproduced: temp file through PowerShell, BOM and mojibake repaired, text intact',{skip:process.platform!=='win32'},async t=>{
- const home=temp(t,'cursor-run'),local=path.join(home,'Local'),profile=path.join(local,'Confab','resident');profileApi.initialize(profile);
+ const home=temp(t,'cursor-run'),local=path.join(home,'Local'),profile=path.join(local,'SanskritLearning','resident');profileApi.initialize(profile);
  const received=[];const server=http.createServer(async(req,res)=>{let body='';for await(const part of req)body+=part;received.push(JSON.parse(body));res.end('{"accepted":true,"reason":"ok"}');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));fs.writeFileSync(path.join(profile,'endpoint.json'),JSON.stringify({port:server.address().port}));t.after(()=>{server.closeAllConnections();server.close();});
  installer.install('cursor',{home,check:false});
@@ -235,7 +235,7 @@ test('Cursor launch reproduced: temp file through PowerShell, BOM and mojibake r
  await run('stop',{hook_event_name:'stop',conversation_id:'conv',generation_id:'gen',cursor_version:'3.22.12',status:'completed',loop_count:0});
  assert.deepEqual(received.map(({agent,sessionId,id,...rest})=>rest),[{event:'turn',text:TEXT,turnId:'gen'},{event:'reply',text:'Résumé: done.',final:false,turnId:'gen'},{event:'reply-end',status:'completed',turnId:'gen'}]);
 });
-// Uninstall returns each app to its pre-install state: a file Confab created is deleted (not left empty),
+// Uninstall returns each app to its pre-install state: a file SanskritLearning created is deleted (not left empty),
 // a reinstall never replaces the original backup, the backup is removed once the file matches it, and Codex's
 // trust entries for our hooks leave config.toml. Nothing else in config.toml changes.
 test('uninstall: created files are deleted, the first backup is kept across reinstalls, Codex trust entries are removed',t=>{
@@ -246,22 +246,22 @@ test('uninstall: created files are deleted, the first backup is kept across rein
  const trust=['user_prompt_submit','stop','session_end'].map(e=>`[hooks.state.'${hooksJson}:${e}:0:0']\ntrusted_hash = "sha256:${e}"\n`).join('\n');
  fs.writeFileSync(toml,before+'\n'+trust+`\n[hooks.state.'${hooksJson}:pre_tool_use:0:0']\ntrusted_hash = "sha256:theirs"\n`);
  for(const h of ['cursor','antigravity','codex']){
-  const r=installer.uninstall(h,{home});assert.equal(r.deleted,true,h+' file was created by Confab');assert.equal(fs.existsSync(r.file),false);assert.equal(fs.existsSync(r.file+'.confab.bak'),false,h+' no backup left');
+  const r=installer.uninstall(h,{home});assert.equal(r.deleted,true,h+' file was created by SanskritLearning');assert.equal(fs.existsSync(r.file),false);assert.equal(fs.existsSync(r.file+'.sanskrit_learning.bak'),false,h+' no backup left');
  }
  assert.equal(fs.readFileSync(toml,'utf8'),before+`\n[hooks.state.'${hooksJson}:pre_tool_use:0:0']\ntrusted_hash = "sha256:theirs"\n`,'only our trust tables were removed');
  // A file that existed: the first backup survives a reinstall, and uninstall restores it exactly, then drops the backup.
  const cursorFile=path.join(home,'.cursor','hooks.json'),original={version:1,hooks:{stop:[{command:'./mine.sh'}]}};
  fs.writeFileSync(cursorFile,JSON.stringify(original));installer.install('cursor',{home,...options});installer.install('cursor',{home,...options});
- assert.deepEqual(JSON.parse(fs.readFileSync(cursorFile+'.confab.bak','utf8')),original,'the backup is the pre-install file, not our previous install');
- const r=installer.uninstall('cursor',{home});assert.equal(r.matchesOriginal,true);assert.deepEqual(JSON.parse(fs.readFileSync(cursorFile,'utf8')),original);assert.equal(fs.existsSync(cursorFile+'.confab.bak'),false);
+ assert.deepEqual(JSON.parse(fs.readFileSync(cursorFile+'.sanskrit_learning.bak','utf8')),original,'the backup is the pre-install file, not our previous install');
+ const r=installer.uninstall('cursor',{home});assert.equal(r.matchesOriginal,true);assert.deepEqual(JSON.parse(fs.readFileSync(cursorFile,'utf8')),original);assert.equal(fs.existsSync(cursorFile+'.sanskrit_learning.bak'),false);
 });
 test('Claude Code leftovers: plugin cache (all versions), data folders, registry entries and usage counters are removed; nothing else',t=>{
  const home=temp(t,'claude-left'),claude=path.join(home,'.claude');
- for(const d of ['plugins/cache/confab-local/confab/0.6.0','plugins/cache/confab-local/confab/0.6.2','plugins/data/confab-confab-local','plugins/data/confab-observer-inline','plugins/data/other-plugin'])fs.mkdirSync(path.join(claude,d),{recursive:true});
- fs.writeFileSync(path.join(claude,'settings.json'),JSON.stringify({enabledPlugins:{'frontend-design@x':true,'confab@confab-local':true},extraKnownMarketplaces:{'confab-local':{}},hooks:{Stop:[]}}));
- fs.writeFileSync(path.join(home,'.claude.json'),JSON.stringify({projects:{'C:/repo':{}},pluginUsage:{'confab@inline':{},'confab-observer@inline':{},'other@x':{}},skillUsage:{'confab:start':{},'other:skill':{}}}));
+ for(const d of ['plugins/cache/sanskrit_learning-local/sanskrit_learning/0.6.0','plugins/cache/sanskrit_learning-local/sanskrit_learning/0.6.2','plugins/data/sanskrit_learning-sanskrit_learning-local','plugins/data/sanskrit_learning-observer-inline','plugins/data/other-plugin'])fs.mkdirSync(path.join(claude,d),{recursive:true});
+ fs.writeFileSync(path.join(claude,'settings.json'),JSON.stringify({enabledPlugins:{'frontend-design@x':true,'sanskrit_learning@sanskrit_learning-local':true},extraKnownMarketplaces:{'sanskrit_learning-local':{}},hooks:{Stop:[]}}));
+ fs.writeFileSync(path.join(home,'.claude.json'),JSON.stringify({projects:{'C:/repo':{}},pluginUsage:{'sanskrit_learning@inline':{},'sanskrit_learning-observer@inline':{},'other@x':{}},skillUsage:{'sanskrit_learning:start':{},'other:skill':{}}}));
  const done=installer.removeClaudeLeftovers({home});assert.ok(done.length>=5);
- assert.equal(fs.existsSync(path.join(claude,'plugins/cache/confab-local')),false);assert.deepEqual(fs.readdirSync(path.join(claude,'plugins/data')),['other-plugin']);
+ assert.equal(fs.existsSync(path.join(claude,'plugins/cache/sanskrit_learning-local')),false);assert.deepEqual(fs.readdirSync(path.join(claude,'plugins/data')),['other-plugin']);
  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(claude,'settings.json'),'utf8')),{enabledPlugins:{'frontend-design@x':true},hooks:{Stop:[]}});
  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home,'.claude.json'),'utf8')),{projects:{'C:/repo':{}},pluginUsage:{'other@x':{}},skillUsage:{'other:skill':{}}});
 });

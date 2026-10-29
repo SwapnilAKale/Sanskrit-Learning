@@ -1,4 +1,4 @@
-# Draws the Confab icon: the speaking cursor, a text cursor whose stem vibrates like a plucked string, in amber to
+# Draws the SanskritLearning icon: the speaking cursor, a text cursor whose stem vibrates like a plucked string, in amber to
 # coral on a night-blue tile with a warm glow. Writes assets\app.ico (16 to 256 px) and assets\app.png (256 px).
 # Developer tool: run it after changing the design, then commit both files.
 #   powershell -ExecutionPolicy Bypass -File scripts\make-icon.ps1

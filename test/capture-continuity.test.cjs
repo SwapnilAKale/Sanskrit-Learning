@@ -22,7 +22,7 @@ test('speech detector settings: defaults, clamping, and the path from settings.j
  assert.deepEqual(vad.resolve({threshold:2,preSpeechSeconds:-1,minSilenceSeconds:'x'}),{threshold:0.95,preSpeechSeconds:0,minSilenceSeconds:0.5},'out of range is clamped, invalid uses the default');
  assert.deepEqual(vad.fromEnv(vad.toEnv({threshold:0.4})),{threshold:0.4,preSpeechSeconds:0.75,minSilenceSeconds:0.5});
  const fs=require('node:fs'),path=require('node:path'),dir=fs.mkdtempSync(path.resolve('test-output/vad-settings-'));
- try{fs.writeFileSync(path.join(dir,'settings.json'),JSON.stringify({vad:{threshold:0.45,minSilenceSeconds:0.8}}));
+ try{fs.writeFileSync(path.join(dir,'settings.json'),JSON.stringify({language:'en',vad:{threshold:0.45,minSilenceSeconds:0.8}}));
   assert.deepEqual(require('../src/pc/profile.cjs').settings(dir).vad,{threshold:0.45,preSpeechSeconds:0.75,minSilenceSeconds:0.8});
   const engine=require('../src/pc/engine-factory.cjs').makeEngine(path.resolve('.'),{profile:dir});
   try{assert.deepEqual(engine.vad,{threshold:0.45,preSpeechSeconds:0.75,minSilenceSeconds:0.8},'the engine passes the profile settings to its detector process');}finally{engine.close();}

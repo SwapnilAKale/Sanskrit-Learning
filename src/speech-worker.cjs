@@ -23,7 +23,7 @@ if(mode==='vad'){
 }else if(mode==='asr-manual'){
  require('./manual-recognition.cjs').startManualRecognition(modelRoot,send);
 }else{
-  const {createTTS,generate,sherpa}=require('./speech.cjs'),tts=createTTS(modelRoot,Number(process.env.CONFAB_TTS_THREADS)||3);
+  const {createTTS,generate,sherpa}=require('./speech.cjs'),tts=createTTS(modelRoot,Number(process.env.SANSKRIT_LEARNING_TTS_THREADS)||3);
   generate(tts,'Ready.');
   send({type:'ready',mode,loadMs:performance.now()-began});
   process.on('message',async event=>{

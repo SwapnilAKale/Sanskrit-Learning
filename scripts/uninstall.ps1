@@ -1,13 +1,13 @@
-# Removes Confab for the current Windows user: every agent connection (each agent's file restored), the background
+# Removes SanskritLearning for the current Windows user: every agent connection (each agent's file restored), the background
 # service, login startup, the Start menu entry, the Settings > Apps entry, the runtime, the app and the profile.
 #   -Gui                          windows instead of a console: tray menu and Settings > Apps (asks in a window)
 #   -KeepModels | -DeleteModels   keep or delete the downloaded speech models (otherwise it asks)
 #
 # Order, so that a stop at any point leaves something whole and an uninstall that can be run again:
-#   1. Check, changing nothing, that every agent file holding a Confab entry can be restored.
-#   2. Disconnect the agents. If this fails, Confab is still fully installed and working.
+#   1. Check, changing nothing, that every agent file holding a SanskritLearning entry can be restored.
+#   2. Disconnect the agents. If this fails, SanskritLearning is still fully installed and working.
 #   3. Remove login startup and the Start menu entry, so nothing starts it again; mark the installation 'uninstalling'.
-#   4. Stop Confab.
+#   4. Stop SanskritLearning.
 #   5. Move every folder aside (this fails, before anything is deleted, if a file is in use), then delete them.
 #   6. Only then remove the Settings > Apps entry, and last the uninstaller's own folder.
 # Every step can be repeated: running uninstall again finishes one that stopped.
@@ -20,18 +20,18 @@ $sandbox = Get-AppDataRedirect
 if ($sandbox) {
     $passOn = @(); if ($KeepModels) { $passOn += '-KeepModels' }; if ($DeleteModels) { $passOn += '-DeleteModels' }; if ($Gui) { $passOn += '-Gui' }
     # The copy in %TEMP% keeps running after the folder it came from is deleted.
-    $copy = Join-Path $env:TEMP 'confab-uninstall.ps1'
+    $copy = Join-Path $env:TEMP 'sanskrit_learning-uninstall.ps1'
     Copy-Item -LiteralPath $PSCommandPath -Destination $copy -Force
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'windows-shell.ps1') -Destination (Join-Path $env:TEMP 'windows-shell.ps1') -Force
     Restart-OutsideSandbox -Script $copy -Arguments $passOn -App $sandbox
     exit 3
 }
-$base = Join-Path $env:LOCALAPPDATA 'Confab'
+$base = Join-Path $env:LOCALAPPDATA 'SanskritLearning'
 $app = Join-Path $base 'app'
 $node = Join-Path $base 'runtime\node\node.exe'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-$appsKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Confab'
-$shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'Confab.lnk'
+$appsKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\SanskritLearning'
+$shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'SanskritLearning.lnk'
 $log = New-Object System.Collections.Generic.List[string]
 function Say($text) { $log.Add($text); if (-not $Gui) { Write-Host $text } }
 if ($Gui) { Add-Type -AssemblyName System.Windows.Forms, System.Drawing; [System.Windows.Forms.Application]::EnableVisualStyles() }
@@ -40,7 +40,7 @@ if ($Gui) { Add-Type -AssemblyName System.Windows.Forms, System.Drawing; [System
 # The progress window runs in its own process, so it keeps moving while this one works and outlives the service, which
 # this uninstall stops. It shows the step written to $progressFile, writes <file>.ready once it is on screen, and closes
 # when the step reads "done".
-$progressFile = Join-Path $env:TEMP 'confab-uninstall-progress.txt'
+$progressFile = Join-Path $env:TEMP 'sanskrit_learning-uninstall-progress.txt'
 # The window icon: beside the installed uninstaller, or in assets when run from the app or a checkout. Loaded into
 # memory when a window opens, so deleting the folder later does not matter.
 $iconFile = @((Join-Path $PSScriptRoot 'app.ico'), (Join-Path (Split-Path -Parent $PSScriptRoot) 'assets\app.ico')) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
@@ -55,12 +55,12 @@ function Start-ProgressWindow {
     $ui = @'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
-$file = $env:CONFAB_PROGRESS
+$file = $env:SANSKRIT_LEARNING_PROGRESS
 $f = New-Object System.Windows.Forms.Form
-$f.Text = 'Uninstall Confab'; $f.ClientSize = New-Object System.Drawing.Size(420, 130); $f.StartPosition = 'CenterScreen'
+$f.Text = 'Uninstall SanskritLearning'; $f.ClientSize = New-Object System.Drawing.Size(420, 130); $f.StartPosition = 'CenterScreen'
 $f.FormBorderStyle = 'FixedDialog'; $f.ControlBox = $false; $f.TopMost = $true; $f.Font = New-Object System.Drawing.Font('Segoe UI', 9.5)
-if ($env:CONFAB_ICON) { try { $f.Icon = New-Object System.Drawing.Icon $env:CONFAB_ICON } catch { } }
-$title = New-Object System.Windows.Forms.Label; $title.Text = 'Uninstalling Confab...'; $title.Font = New-Object System.Drawing.Font('Segoe UI', 11, [System.Drawing.FontStyle]::Bold)
+if ($env:SANSKRIT_LEARNING_ICON) { try { $f.Icon = New-Object System.Drawing.Icon $env:SANSKRIT_LEARNING_ICON } catch { } }
+$title = New-Object System.Windows.Forms.Label; $title.Text = 'Uninstalling SanskritLearning...'; $title.Font = New-Object System.Drawing.Font('Segoe UI', 11, [System.Drawing.FontStyle]::Bold)
 $title.Location = New-Object System.Drawing.Point(18, 14); $title.Size = New-Object System.Drawing.Size(390, 24)
 $step = New-Object System.Windows.Forms.Label; $step.Location = New-Object System.Drawing.Point(18, 44); $step.Size = New-Object System.Drawing.Size(390, 22); $step.ForeColor = [System.Drawing.Color]::DimGray
 $bar = New-Object System.Windows.Forms.ProgressBar; $bar.Style = 'Marquee'; $bar.MarqueeAnimationSpeed = 30
@@ -73,7 +73,7 @@ $t = New-Object System.Windows.Forms.Timer; $t.Interval = 150
 $t.Add_Tick({ try { $s = [IO.File]::ReadAllText($file) } catch { $s = $null }; if ($s -eq 'done') { $t.Stop(); $f.Close() } elseif ($s) { $step.Text = $s } })
 $t.Start(); [void]$f.ShowDialog()
 '@
-    $env:CONFAB_PROGRESS = $progressFile; $env:CONFAB_ICON = [string]$iconFile
+    $env:SANSKRIT_LEARNING_PROGRESS = $progressFile; $env:SANSKRIT_LEARNING_ICON = [string]$iconFile
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($ui))
     $script:progressUi = Start-Process -FilePath (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') -ArgumentList @('-NoLogo', '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-EncodedCommand', $encoded) -WindowStyle Hidden -PassThru
 }
@@ -84,10 +84,10 @@ function Stop-ProgressWindow {
     Remove-Item -LiteralPath $progressFile, ($progressFile + '.ready') -Force -ErrorAction SilentlyContinue
 }
 function Show-Message([string]$text, [string]$icon = 'Information') {
-    if ($Gui) { [void][System.Windows.Forms.MessageBox]::Show($text, 'Confab', 'OK', $icon) }
+    if ($Gui) { [void][System.Windows.Forms.MessageBox]::Show($text, 'SanskritLearning', 'OK', $icon) }
     else { $color = 'White'; if ($icon -eq 'Warning') { $color = 'Yellow' }; Write-Host ''; Write-Host $text -ForegroundColor $color }
 }
-# Stops with a clear account of what state Confab is in. Nothing done so far is undone, and nothing is left half-done.
+# Stops with a clear account of what state SanskritLearning is in. Nothing done so far is undone, and nothing is left half-done.
 function Stop-Uninstall([string]$what, [string]$state) {
     Stop-ProgressWindow
     Show-Message ('Uninstall stopped: ' + $what + "`r`n`r`n" + $state) 'Warning'
@@ -98,13 +98,13 @@ function Stop-Uninstall([string]$what, [string]$state) {
 # screen, so there is no moment without a window. Returns 'keep', 'delete', or $null when cancelled.
 function Show-Confirmation {
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = 'Uninstall Confab'; $form.ClientSize = New-Object System.Drawing.Size(520, 250); $form.StartPosition = 'CenterScreen'
+    $form.Text = 'Uninstall SanskritLearning'; $form.ClientSize = New-Object System.Drawing.Size(520, 250); $form.StartPosition = 'CenterScreen'
     $form.FormBorderStyle = 'FixedDialog'; $form.MaximizeBox = $false; $form.MinimizeBox = $false; $form.TopMost = $true; $form.Font = New-Object System.Drawing.Font('Segoe UI', 9.5)
     if ($iconFile) { try { $form.Icon = New-Object System.Drawing.Icon $iconFile } catch { } }
     $form.Add_Load({ $this.WindowState = 'Minimized' })
     $form.Add_Shown({ $this.WindowState = 'Normal'; $this.Activate(); $this.TopMost = $false })
     $text = New-Object System.Windows.Forms.Label
-    $text.Text = "This removes Confab from this PC for your account:`r`n  - the background service, its login startup and Start menu entry`r`n  - the hook in every connected agent (each agent's settings are restored)`r`n  - the app, its Node.js runtime, your Confab settings and logs"
+    $text.Text = "This removes SanskritLearning from this PC for your account:`r`n  - the background service, its login startup and Start menu entry`r`n  - the hook in every connected agent (each agent's settings are restored)`r`n  - the app, its Node.js runtime, your SanskritLearning settings and logs"
     $text.Location = New-Object System.Drawing.Point(16, 14); $text.Size = New-Object System.Drawing.Size(490, 90)
     $models = New-Object System.Windows.Forms.CheckBox
     $models.Text = 'Also delete the downloaded speech models (about 1 GB). Untick to keep them for a later install.'
@@ -119,7 +119,7 @@ function Show-Confirmation {
     $watch.Add_Tick({ $script:waited += 150; if ((Test-Path -LiteralPath ($progressFile + '.ready')) -or $script:waited -gt 15000) { $watch.Stop(); $form.Close() } })
     $ok.Add_Click({
         $script:choice = 'keep'; if ($models.Checked) { $script:choice = 'delete' }
-        $text.Font = New-Object System.Drawing.Font('Segoe UI', 11, [System.Drawing.FontStyle]::Bold); $text.Text = 'Uninstalling Confab...'
+        $text.Font = New-Object System.Drawing.Font('Segoe UI', 11, [System.Drawing.FontStyle]::Bold); $text.Text = 'Uninstalling SanskritLearning...'
         $models.Visible = $false; $ok.Visible = $false; $cancel.Visible = $false; $bar.Visible = $true; $form.ControlBox = $false; $form.CancelButton = $null
         [System.Windows.Forms.Application]::DoEvents()
         Start-ProgressWindow; $watch.Start()
@@ -129,15 +129,15 @@ function Show-Confirmation {
 }
 
 # --- Start ---------------------------------------------------------------------------------------------------------
-if (-not (Enter-SetupLock)) { Show-Message 'Confab setup or uninstall is already running. Let it finish, then try again.' 'Warning'; exit 4 }
+if (-not (Enter-SetupLock)) { Show-Message 'SanskritLearning setup or uninstall is already running. Let it finish, then try again.' 'Warning'; exit 4 }
 
 # Nothing installed: only remove entries a damaged installation may have left.
 if (-not (Test-Path -LiteralPath $base)) {
-    $leftovers = (Test-Path -LiteralPath $appsKey) -or [bool](Get-ItemProperty -LiteralPath $runKey -ErrorAction SilentlyContinue).Confab -or (Test-Path -LiteralPath $shortcut)
-    Remove-ItemProperty -LiteralPath $runKey -Name 'Confab' -ErrorAction SilentlyContinue
+    $leftovers = (Test-Path -LiteralPath $appsKey) -or [bool](Get-ItemProperty -LiteralPath $runKey -ErrorAction SilentlyContinue).SanskritLearning -or (Test-Path -LiteralPath $shortcut)
+    Remove-ItemProperty -LiteralPath $runKey -Name 'SanskritLearning' -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $shortcut -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $appsKey -Recurse -Force -ErrorAction SilentlyContinue
-    if ($leftovers) { Show-Message 'Confab was not installed any more. Its leftover startup and Settings > Apps entries were removed.' } else { Show-Message 'Confab is not installed.' }
+    if ($leftovers) { Show-Message 'SanskritLearning was not installed any more. Its leftover startup and Settings > Apps entries were removed.' } else { Show-Message 'SanskritLearning is not installed.' }
     exit 0
 }
 
@@ -147,7 +147,7 @@ if (-not $KeepModels -and -not $DeleteModels) {
         if (-not $answer) { exit 0 }
         if ($answer -eq 'keep') { $KeepModels = $true }
     } else {
-        Write-Host 'Uninstall Confab' -ForegroundColor White
+        Write-Host 'Uninstall SanskritLearning' -ForegroundColor White
         $answer = Read-Host 'Delete the downloaded speech models too (about 1 GB)? Keep them to reinstall later without downloading. [D]elete / [K]eep (default: Delete)'
         if ($answer -match '^[kK]') { $KeepModels = $true }
     }
@@ -163,7 +163,7 @@ if ($canDisconnect) {
     if ($LASTEXITCODE -ne 0 -and -not $problems.Count) { Stop-Uninstall 'the agent check could not run.' 'Nothing was removed. Run Diagnose from the tray menu, then uninstall again.' }
     if ($problems.Count) {
         $list = ($problems | ForEach-Object { '  - ' + $_.name + ': ' + $(if ($_.file) { $_.file + ': ' } else { '' }) + $_.problem }) -join "`r`n"
-        Stop-Uninstall ("these agent settings cannot be restored yet:`r`n" + $list) 'Nothing was removed; Confab is still installed and working. Close the agent (or fix the file) and uninstall again.'
+        Stop-Uninstall ("these agent settings cannot be restored yet:`r`n" + $list) 'Nothing was removed; SanskritLearning is still installed and working. Close the agent (or fix the file) and uninstall again.'
     }
 }
 
@@ -174,31 +174,31 @@ if ($canDisconnect) {
     $failed = @($results | Where-Object { $_.error })
     if (-not $results.Count -or $failed.Count) {
         $why = 'the agent step could not run.'; if ($failed.Count) { $why = ($failed | ForEach-Object { $_.name + ': ' + $_.error }) -join '; ' }
-        Stop-Uninstall $why 'Confab is still installed and working. Agents already disconnected can be connected again from the tray menu > Connect agents. Fix the problem, then uninstall again.'
+        Stop-Uninstall $why 'SanskritLearning is still installed and working. Agents already disconnected can be connected again from the tray menu > Connect agents. Fix the problem, then uninstall again.'
     }
-    foreach ($r in $results) { foreach ($line in $r.lines) { if ($line -notmatch '^No Confab hook') { Say ('Agents: ' + $r.id + ': ' + $line) } } }
-    if (@($results | Where-Object { -not $_.ok }).Count) { Say 'Agents: some agent files differed from their backups; the backups were kept beside them (*.confab.bak).' }
-    else { Say 'Agents: every Confab hook removed.' }
-} else { Say 'Agents: the app or its runtime was already missing, so agent hooks could not be checked. Install Confab again and uninstall it to remove them.' }
+    foreach ($r in $results) { foreach ($line in $r.lines) { if ($line -notmatch '^No SanskritLearning hook') { Say ('Agents: ' + $r.id + ': ' + $line) } } }
+    if (@($results | Where-Object { -not $_.ok }).Count) { Say 'Agents: some agent files differed from their backups; the backups were kept beside them (*.sanskrit_learning.bak).' }
+    else { Say 'Agents: every SanskritLearning hook removed.' }
+} else { Say 'Agents: the app or its runtime was already missing, so agent hooks could not be checked. Install SanskritLearning again and uninstall it to remove them.' }
 
 # --- 3. Nothing starts it again ------------------------------------------------------------------------------------
 Step 'Removing login startup and the Start menu entry...'
 Set-InstallState $base 'uninstalling'
-Remove-ItemProperty -LiteralPath $runKey -Name 'Confab' -ErrorAction SilentlyContinue
+Remove-ItemProperty -LiteralPath $runKey -Name 'SanskritLearning' -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $shortcut -Force -ErrorAction SilentlyContinue
-if ([bool](Get-ItemProperty -LiteralPath $runKey -ErrorAction SilentlyContinue).Confab -or (Test-Path -LiteralPath $shortcut)) {
+if ([bool](Get-ItemProperty -LiteralPath $runKey -ErrorAction SilentlyContinue).SanskritLearning -or (Test-Path -LiteralPath $shortcut)) {
     Stop-Uninstall 'the login startup or Start menu entry could not be removed.' 'Agents are disconnected; the app files are still in place. Uninstall again from Settings > Apps.'
 }
 Say 'Startup: login entry and Start menu entry removed.'
 
-# --- 4. Stop Confab -------------------------------------------------------------------------------------------
-Step 'Stopping Confab...'
-# Everything run by Confab's own runtime: the service, hooks in flight, the tray's helpers.
+# --- 4. Stop SanskritLearning -------------------------------------------------------------------------------------------
+Step 'Stopping SanskritLearning...'
+# Everything run by SanskritLearning's own runtime: the service, hooks in flight, the tray's helpers.
 # Always counted as @(...): with a single match Windows PowerShell 5.1 returns the process itself, whose .Count is
 # empty, so the service alone was once taken for "nothing running".
 for ($i = 0; $i -lt 5 -and @(Get-ProcessesUnder $base).Count; $i++) { @(Get-ProcessesUnder $base) | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; Start-Sleep -Milliseconds 600 }
 $still = @(Get-ProcessesUnder $base)
-if ($still.Count) { Stop-Uninstall ('Confab could not be stopped (' + (($still | ForEach-Object { $_.Name + ' ' + $_.ProcessId }) -join ', ') + ').') 'It will not start again at sign-in. Restart the PC, then uninstall again from Settings > Apps.' }
+if ($still.Count) { Stop-Uninstall ('SanskritLearning could not be stopped (' + (($still | ForEach-Object { $_.Name + ' ' + $_.ProcessId }) -join ', ') + ').') 'It will not start again at sign-in. Restart the PC, then uninstall again from Settings > Apps.' }
 Say 'Service: stopped.'
 
 # --- 5. Files ------------------------------------------------------------------------------------------------------
@@ -237,7 +237,7 @@ if ($KeepModels) {
 }
 Remove-InterruptedLeftovers $base
 $left = @(Get-ChildItem -LiteralPath $base -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '\.(old|removing)-[0-9a-f]{8}$' })
-if ($left.Count) { Stop-Uninstall ('some files could not be deleted (' + $left[0].FullName + ').') 'Confab is stopped and disconnected, and will not start again. Restart the PC, then uninstall again from Settings > Apps to delete the rest.' }
+if ($left.Count) { Stop-Uninstall ('some files could not be deleted (' + $left[0].FullName + ').') 'SanskritLearning is stopped and disconnected, and will not start again. Restart the PC, then uninstall again from Settings > Apps to delete the rest.' }
 if ($KeepModels) { Say ('Files: removed. The speech models were kept in ' + (Join-Path $app 'assets') + '; setup will reuse them, or delete ' + $base + ' to remove them.') }
 else { Say ('Files: ' + $base + ' deleted, including the speech models.') }
 
@@ -250,8 +250,8 @@ Remove-Item -LiteralPath (Join-Path $base 'uninstaller'), (Join-Path $base 'stat
 if (-not $KeepModels) { Remove-Item -LiteralPath $base -Recurse -Force -ErrorAction SilentlyContinue }
 # Setup's log, launchers left in %TEMP% by earlier runs, and the copies made when this run left an app's sandbox.
 Remove-StaleLaunchers
-Remove-Item -LiteralPath (Join-Path $env:TEMP 'confab-setup.log') -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath (Join-Path $env:TEMP 'sanskrit_learning-setup.log') -Force -ErrorAction SilentlyContinue
 if ($PSScriptRoot -ieq $env:TEMP.TrimEnd('\')) { Remove-Item -LiteralPath (Join-Path $env:TEMP 'windows-shell.ps1'), $PSCommandPath -Force -ErrorAction SilentlyContinue }
-Say 'Confab was uninstalled.'
+Say 'SanskritLearning was uninstalled.'
 Stop-ProgressWindow
 Show-Message ($log -join "`r`n`r`n")

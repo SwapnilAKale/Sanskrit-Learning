@@ -44,7 +44,7 @@ async function run(root,{profile=profileApi.profileDir(),createTray,createInput,
   engine=new LazySpeechEngine(engineFactory||(()=>require('./engine-factory.cjs').makeEngine(root,{profile})),{idleMs:settings.modelsIdleMs,busy:()=>!!controller?.capture||controller?.pendingReplies>0});
   controller=new PcController({engine,audio,input,notify:tray,lazy:true,spoken:{sentences:settings.spokenSentences,chars:settings.spokenChars,dateOrder:settings.dateOrder},onTalkback:text=>gate.dictated(text),onDisarm:()=>gate.disarm(),saveDraft:text=>{fs.mkdirSync(draftDir,{recursive:true});const name=require('node:crypto').createHash('sha256').update(text).digest('hex');fs.writeFileSync(path.join(draftDir,name+'.json'),JSON.stringify({text,at:Date.now()}),{mode:0o600});},clearDraft:text=>{try{fs.unlinkSync(path.join(draftDir,require('node:crypto').createHash('sha256').update(text).digest('hex')+'.json'));}catch{}}});
   await controller.ready();controller.setReadAloud(gate.mode!=='off');if(settings.paused)await controller.setPaused(true);
-  let controls=Promise.resolve();tray.on('action',action=>{controls=controls.then(()=>control(action)).catch(()=>controller.failure('Tray action failed. Check Confab status.'));});
+  let controls=Promise.resolve();tray.on('action',action=>{controls=controls.then(()=>control(action)).catch(()=>controller.failure('Tray action failed. Check SanskritLearning status.'));});
   // Bounded request log and counters: status, reason, decision, agent, session/turn ids and time; for a turn that
   // missed a waiting talk-back, its similarity and the two lengths (match).
   // Never prompt or reply text, reply ids, or tokens.
@@ -141,5 +141,5 @@ async function run(root,{profile=profileApi.profileDir(),createTray,createInput,
   return {close,controller,engine,tray,server,state,control,profile,gate};
  }catch(e){await close();throw e;}
 }
-if(require.main===module)run(process.argv[2],{profile:process.argv[3]||profileApi.profileDir()}).catch(e=>{process.stderr.write('Confab resident failed: '+e.message+'\n');process.exitCode=1;});
+if(require.main===module)run(process.argv[2],{profile:process.argv[3]||profileApi.profileDir()}).catch(e=>{process.stderr.write('SanskritLearning resident failed: '+e.message+'\n');process.exitCode=1;});
 module.exports={run,VERSION};

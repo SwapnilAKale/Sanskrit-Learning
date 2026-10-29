@@ -1,13 +1,13 @@
 # Developer guide
 
-For anyone connecting an agent to Confab, adding support for a new agent, or working on Confab itself.
+For anyone connecting an agent to SanskritLearning, adding support for a new agent, or working on SanskritLearning itself.
 
 - [How it fits together](#how-it-fits-together)
 - [Custom agents](CUSTOM_AGENTS.md): read your own agent's replies aloud (its own page)
 - [Adding an agent](#adding-an-agent) with lifecycle hooks
 - [Hotkeys](#hotkeys)
 - [What is spoken](#what-is-spoken) and [Pronunciation](#pronunciation)
-- [Working on Confab](#working-on-confab)
+- [Working on SanskritLearning](#working-on-sanskritlearning)
 
 ## How it fits together
 
@@ -18,13 +18,13 @@ For anyone connecting an agent to Confab, adding support for a new agent, or wor
             └─ reply ─▶ reply-text rules ─▶ Node normaliser ─▶ Kokoro ─▶ speakers
                  ▲
  agent hooks ─▶ src/adapters/hooks/adapter.cjs ─┐
- custom agent ─▶ src/pc/client.cjs or confab.py ─┴─▶ POST http://127.0.0.1:<port>/event
+ custom agent ─▶ src/pc/client.cjs or sanskrit_learning.py ─┴─▶ POST http://127.0.0.1:<port>/event
 ```
 
 - **Resident service** (`src/pc/`): one process per Windows user, started at login. It owns the tray, the global hotkeys, the badge, audio, and a loopback HTTP endpoint. Speech models load in worker processes on first use (`src/service/native-engine.cjs`, `src/speech-worker.cjs`) and unload after 15 idle minutes.
 - **Input** (`src/input/`): `RegisterHotKey` hotkeys (no keyboard hook), clipboard paste with one Ctrl+V and clipboard restore, and a UI Automation helper that identifies the focused box.
 - **Agent hooks** (`src/adapters/hooks/`): one adapter program plus a mapping file per agent; `install.cjs` writes and removes the hook entries. The Claude Code plugin lives in `src/adapters/claude-code/`.
-- **Profile** (`%LOCALAPPDATA%\Confab\resident\`): `auth.json` (token), `endpoint.json` (port, while running), `settings.json`, `drafts/`, and the logs `requests.jsonl` and `hooks.jsonl`. The installer limits the folder to the current user and SYSTEM.
+- **Profile** (`%LOCALAPPDATA%\SanskritLearning\resident\`): `auth.json` (token), `endpoint.json` (port, while running), `settings.json`, `drafts/`, and the logs `requests.jsonl` and `hooks.jsonl`. The installer limits the folder to the current user and SYSTEM.
 
 ## Custom agents
 
@@ -68,12 +68,12 @@ Keep this table current whenever a shortcut changes. All hotkeys use `RegisterHo
 
 | Key | Active when | What it does |
 |---|---|---|
-| **Ctrl+Shift+8** | Service running, hotkeys not paused. | **Plain dictation.** First press: grey **Starting…** badge at once, playback stops and the microphone opens. When capture is live, the badge turns red (**● Dictating**) with the start beep. Audio is buffered while models load. The box focused at the press is the target; if focus leaves it, recording continues and the badge warns **⚠ Focus moved — click back to paste here**. Second press, or Ctrl+Shift+7: stops (**… Transcribing**), then pastes without Enter into the target box (**✓ Pasted**). If the box can't be proven the same: **⧉ Not pasted — copied**, the text is on the clipboard, plus a notification. Never causes a spoken reply. |
-| **Ctrl+Shift+7** | Same. | **Talk-back dictation.** Same as Ctrl+Shift+8 with a purple **◆ Talk-back** badge. The draft is kept until its reply, Cancel or a newer talk-back (2-hour cap), and the turn it becomes owns one spoken reply. The key that **starts** a recording sets its mode; either key stops it. |
-| **Ctrl+Shift+6** | Same. | **Cancel.** At any point (starting, recording, focus moved, transcribing): discards the recording, so nothing is pasted or copied. Also cancels the pending talk-back, stops playback, clears queued replies and forgets the target box. Text already in that box is never erased: the only keystroke Confab sends to a box is the Ctrl+V of a paste. Two-tone falling cue when something was cancelled; otherwise a soft tick. |
-| Ctrl+Shift+9 | **Off by default.** Turn it on with `"hotkeys": {"arm": "Ctrl+Shift+9"}`. | **Arm text box.** Targets the focused editable box without recording. Rarely needed, because 8 and 7 target the box themselves. |
+| **Ctrl+Shift+I** | Service running, hotkeys not paused. | **Plain dictation.** First press: grey **Starting…** badge at once, playback stops and the microphone opens. When capture is live, the badge turns red (**● Dictating**) with the start beep. Audio is buffered while models load. The box focused at the press is the target; if focus leaves it, recording continues and the badge warns **⚠ Focus moved — click back to paste here**. Second press, or Ctrl+Shift+U: stops (**… Transcribing**), then pastes without Enter into the target box (**✓ Pasted**). If the box can't be proven the same: **⧉ Not pasted — copied**, the text is on the clipboard, plus a notification. Never causes a spoken reply. |
+| **Ctrl+Shift+U** | Same. | **Talk-back dictation.** Same as Ctrl+Shift+I with a purple **◆ Talk-back** badge. The draft is kept until its reply, Cancel or a newer talk-back (2-hour cap), and the turn it becomes owns one spoken reply. The key that **starts** a recording sets its mode; either key stops it. |
+| **Ctrl+Shift+Y** | Same. | **Cancel.** At any point (starting, recording, focus moved, transcribing): discards the recording, so nothing is pasted or copied. Also cancels the pending talk-back, stops playback, clears queued replies and forgets the target box. Text already in that box is never erased: the only keystroke SanskritLearning sends to a box is the Ctrl+V of a paste. Two-tone falling cue when something was cancelled; otherwise a soft tick. |
+| Ctrl+Shift+O | **Off by default.** Turn it on with `"hotkeys": {"arm": "Ctrl+Shift+O"}`. | **Arm text box.** Targets the focused editable box without recording. Rarely needed, because I and U target the box themselves. |
 
-Keys can be changed in `settings.json` (quit first): `"hotkeys": {"capture": "Ctrl+Shift+8", "talkback": "Ctrl+Shift+7", "disarm": "Ctrl+Shift+6", "arm": "off"}`. Use Ctrl+Shift plus a letter, number, F1–F24 or Space. If another program holds a key, the service keeps its other keys, names the missing ones in a notification, retries every 15 seconds, and lists them as `hotkeysUnavailable` in `/health`.
+Keys can be changed in `settings.json` (quit first): `"hotkeys": {"capture": "Ctrl+Shift+I", "talkback": "Ctrl+Shift+U", "disarm": "Ctrl+Shift+Y", "arm": "off"}`. Use Ctrl+Shift plus a letter, number, F1–F24 or Space. If another program holds a key, the service keeps its other keys, names the missing ones in a notification, retries every 15 seconds, and lists them as `hotkeysUnavailable` in `/health`.
 
 **Feedback details:**
 - The badge shows Starting… within about 150 ms. It turns red or purple, and the beep plays, only when Windows has created the capture stream: typically 0.6–0.8 s after the press. Creating any Windows audio stream (`IAudioClient::Initialize`) takes 380–660 ms on typical hardware.
@@ -131,7 +131,7 @@ After the rules above, the Node normaliser (`src/pc/spoken-normalizer.cjs`, no d
 
 **Where it differs from NeMo:**
 
-| Input | NeMo | Confab | Verdict |
+| Input | NeMo | SanskritLearning | Verdict |
 |---|---|---|---|
 | `13000`, `123000` | digit by digit | thirteen thousand | Better |
 | `2-5`, `from 2-10` | "two - five" | "two to five" | Better for ranges |
@@ -163,7 +163,7 @@ After the rules above, the Node normaliser (`src/pc/spoken-normalizer.cjs`, no d
 - Otherwise `dateOrder` in `settings.json` decides: `"dmy"` (default) or `"mdy"`.
 - Day-first reads "the seventh of October twenty twenty six"; month-first reads "July tenth twenty twenty six".
 
-## Working on Confab
+## Working on SanskritLearning
 
 ```bash
 npm install
@@ -173,9 +173,9 @@ npm install
 npm test
 ```
 
-- `npm test` runs every `*.test.cjs` in `test/` and `src/adapters/claude-code/test/`. Some tests load the real speech models from `assets/models/`, so download them first: `node scripts/models.cjs fetch` (the same downloader setup uses; `check --full` re-hashes every file). One test runs `src/pc/confab.py`, so Python 3.8+ should be on PATH.
-- Setup and uninstall are `scripts/setup.ps1` and `scripts/uninstall.ps1`, started by `setup.cmd` and `uninstall.cmd`. The installed layout is `%LOCALAPPDATA%\Confab\app` (a copy of this folder with `node_modules` and the models), `runtime\node` (Node.js pinned in [`assets/runtime.json`](../assets/runtime.json)) and `resident` (the profile). The tray's windows are `src/ui/dialogs.ps1`; they call `scripts/agents.cjs` and `scripts/diagnose.cjs`, which you can also run directly.
-- **Atomic setup and uninstall.** The shared helpers are in `scripts/windows-shell.ps1`. A named mutex (`Local\ConfabSetup`) lets only one setup or uninstall run at a time. `state.json` in the installation folder is `installing`, `ready` or `uninstalling`, and the launcher (`scripts/start-resident.ps1`) starts the service only when it is `ready` or absent. Setup first copies the uninstaller to `uninstaller\` and registers the **Settings → Apps** entry, which runs it with `-Gui`. Node.js, the app files and `node_modules` are then built in `staging\` and swapped in with `Install-Staged`, which renames each target to `*.old-xxxxxxxx` and undoes every swap if one fails. Uninstall runs `agents.cjs check-disconnect` (read-only) before `disconnect all`, then removes startup, stops processes, and renames every folder to `*.removing-xxxxxxxx` before deleting (a file in use stops it with all moves undone). It removes the Apps entry and its own folder last. `Remove-InterruptedLeftovers` clears staging and renamed folders left by an interrupted run. The tray and Settings → Apps open the same uninstaller windows (`-Gui`): confirmation, a progress window in its own process (it outlives the service), and a summary. `uninstall.cmd` runs the same steps in the console.
+- `npm test` runs every `*.test.cjs` in `test/` and `src/adapters/claude-code/test/`. Some tests load the real speech models from `assets/models/`, so download them first: `node scripts/models.cjs fetch` (the same downloader setup uses; `check --full` re-hashes every file). One test runs `src/pc/sanskrit_learning.py`, so Python 3.8+ should be on PATH.
+- Setup and uninstall are `scripts/setup.ps1` and `scripts/uninstall.ps1`, started by `setup.cmd` and `uninstall.cmd`. The installed layout is `%LOCALAPPDATA%\SanskritLearning\app` (a copy of this folder with `node_modules` and the models), `runtime\node` (Node.js pinned in [`assets/runtime.json`](../assets/runtime.json)) and `resident` (the profile). The tray's windows are `src/ui/dialogs.ps1`; they call `scripts/agents.cjs` and `scripts/diagnose.cjs`, which you can also run directly.
+- **Atomic setup and uninstall.** The shared helpers are in `scripts/windows-shell.ps1`. A named mutex (`Local\SanskritLearningSetup`) lets only one setup or uninstall run at a time. `state.json` in the installation folder is `installing`, `ready` or `uninstalling`, and the launcher (`scripts/start-resident.ps1`) starts the service only when it is `ready` or absent. Setup first copies the uninstaller to `uninstaller\` and registers the **Settings → Apps** entry, which runs it with `-Gui`. Node.js, the app files and `node_modules` are then built in `staging\` and swapped in with `Install-Staged`, which renames each target to `*.old-xxxxxxxx` and undoes every swap if one fails. Uninstall runs `agents.cjs check-disconnect` (read-only) before `disconnect all`, then removes startup, stops processes, and renames every folder to `*.removing-xxxxxxxx` before deleting (a file in use stops it with all moves undone). It removes the Apps entry and its own folder last. `Remove-InterruptedLeftovers` clears staging and renamed folders left by an interrupted run. The tray and Settings → Apps open the same uninstaller windows (`-Gui`): confirmation, a progress window in its own process (it outlives the service), and a summary. `uninstall.cmd` runs the same steps in the console.
 - `npm start` runs the service in the foreground from this folder (quit any installed copy first; only one runs per user).
 - `node scripts/compare-normalizer.cjs --diff` compares the normaliser with the NeMo reference cases.
 - Speech settings are built in. An optional `"speech"` object in `settings.json` overrides them: `ttsThreads` (default 6) and `modelRoot` (relative to this folder; default `assets/models`).
@@ -190,7 +190,7 @@ npm test
   |---|---|
   | Word error rate, Kokoro voice (12 prompts, 115 words) | 0.9% (1 error: "build" heard as "bill"). A pipeline check, not accuracy on human speech. |
   | Stop press to text ready | median 581 ms, max 965 ms |
-  | Stop press to paste | median 803 ms (Confab waits at least 800 ms before pasting) |
+  | Stop press to paste | median 803 ms (SanskritLearning waits at least 800 ms before pasting) |
   | Reply received to first audio | median 1.3 s, max 3.1 s |
   | Read-aloud real-time factor | median 0.43 (speech is made about 2.3 times faster than it plays) |
   | Model load (first use after idle unload) | 3.3 s |

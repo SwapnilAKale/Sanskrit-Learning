@@ -1,13 +1,13 @@
 {
-  "name": "confab-local",
+  "name": "sanskrit_learning-local",
   "owner": {
-    "name": "Confab"
+    "name": "SanskritLearning"
   },
   "plugins": [
     {
-      "name": "confab",
+      "name": "sanskrit_learning",
       "source": "./plugin",
-      "description": "Confab read-aloud hooks for Claude Code.",
+      "description": "SanskritLearning read-aloud hooks for Claude Code.",
       "version": "0.8.0"
     }
   ]

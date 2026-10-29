@@ -19,15 +19,15 @@
     "format": "nested",
     "events": {
       "BeforeAgent": {
-        "name": "confab",
+        "name": "sanskrit_learning",
         "timeout": 5000
       },
       "AfterAgent": {
-        "name": "confab",
+        "name": "sanskrit_learning",
         "timeout": 5000
       },
       "SessionEnd": {
-        "name": "confab",
+        "name": "sanskrit_learning",
         "timeout": 5000
       }
     },

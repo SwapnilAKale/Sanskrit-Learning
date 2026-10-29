@@ -5,7 +5,7 @@ const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:
 const profileApi=require('../pc/profile.cjs'),client=require('../pc/client.cjs'),models=require('./models.cjs'),agents=require('./agents.cjs');
 const hooks=require('../adapters/hooks/install.cjs');
 const ROOT=path.resolve(__dirname,'..','..');
-const REPAIR='Run setup again to repair it: in PowerShell, run & "$env:LOCALAPPDATA\\Confab\\app\\setup.cmd"';
+const REPAIR='Run setup again to repair it: in PowerShell, run & "$env:LOCALAPPDATA\\SanskritLearning\\app\\setup.cmd"';
 function ago(ms){const m=Math.round(ms/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago';}
 function regValue(key,name){const r=spawnSync('reg.exe',['query',key,'/v',name],{encoding:'utf8',windowsHide:true});if(r.status!==0)return null;const m=new RegExp('^\\s*'+name+'\\s+REG_\\w+\\s+(.*)$','m').exec(r.stdout);return m?m[1].trim():null;}
 // Loads the speech detector exactly as dictation does: sherpa-onnx's native files and the Silero model.
@@ -27,16 +27,16 @@ async function run({root=ROOT,profile=profileApi.profileDir(),full=false}={}){
  // Service
  // state.json beside the app, written by setup and uninstall: anything but 'ready' means one of them stopped partway.
  let state=null;try{state=JSON.parse(fs.readFileSync(path.join(root,'..','state.json'),'utf8')).state;}catch{}
- if(state==='installing')add({area:'Service',ok:false,text:'Setup did not finish, so Confab does not start.',fix:REPAIR});
- else if(state==='uninstalling')add({area:'Service',ok:false,text:'An uninstall did not finish, so Confab does not start.',fix:'Finish it from Settings > Apps > Installed apps > Confab > Uninstall, or run setup again to keep Confab.'});
+ if(state==='installing')add({area:'Service',ok:false,text:'Setup did not finish, so SanskritLearning does not start.',fix:REPAIR});
+ else if(state==='uninstalling')add({area:'Service',ok:false,text:'An uninstall did not finish, so SanskritLearning does not start.',fix:'Finish it from Settings > Apps > Installed apps > SanskritLearning > Uninstall, or run setup again to keep SanskritLearning.'});
  const node=hooks.bundledNode(root);
  add(node||!fs.existsSync(path.join(root,'..','runtime'))?{area:'Service',ok:true,text:'Node.js runtime: '+(node||process.execPath)+'.'}:{area:'Service',ok:false,text:'The bundled Node.js runtime is missing.',fix:REPAIR});
- const run=regValue('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','Confab');
+ const run=regValue('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','SanskritLearning');
  add(run?{area:'Service',ok:true,text:'Starts automatically when you sign in.'}:{area:'Service',ok:false,warn:true,text:'Not set to start when you sign in.',fix:REPAIR});
- const lnk=path.join(process.env.APPDATA||'','Microsoft','Windows','Start Menu','Programs','Confab.lnk');
+ const lnk=path.join(process.env.APPDATA||'','Microsoft','Windows','Start Menu','Programs','SanskritLearning.lnk');
  add(fs.existsSync(lnk)?{area:'Service',ok:true,text:'Start menu entry: present.'}:{area:'Service',ok:false,warn:true,text:'The Start menu entry is missing.',fix:REPAIR});
  const health=await client.status({profile});
- if(!health)add({area:'Service',ok:false,text:'Confab is not running, or not answering.',fix:'Start it from Start > Confab. If it stops again, see resident-error.log in '+profile+'.'});
+ if(!health)add({area:'Service',ok:false,text:'SanskritLearning is not running, or not answering.',fix:'Start it from Start > SanskritLearning. If it stops again, see resident-error.log in '+profile+'.'});
  else{
   add({area:'Service',ok:true,text:'Running (version '+health.version+', process '+health.pid+'). Models '+health.models+'.'});
   if(health.normalizerError)add({area:'Service',ok:false,warn:true,text:'Number and date reading is limited: '+health.normalizerError});
@@ -46,13 +46,13 @@ async function run({root=ROOT,profile=profileApi.profileDir(),full=false}={}){
   const keys=health.hotkeys||{};
   for(const [action,key] of ['capture','talkback','disarm','arm'].filter(a=>keys[a]).map(a=>[a,keys[a]])){
    const taken=(health.hotkeysUnavailable||[]).includes(key),name={capture:'Dictate',talkback:'Talk-back',disarm:'Cancel',arm:'Arm text box'}[action]||action;
-   add(taken?{area:'Hotkeys',ok:false,text:name+' ('+key+') is held by another program, so it does nothing.',fix:'Close the program that uses '+key+', or choose another key under "hotkeys" in settings.json. Confab takes the key back when it is free.'}:{area:'Hotkeys',ok:true,text:name+': '+key+'.'});
+   add(taken?{area:'Hotkeys',ok:false,text:name+' ('+key+') is held by another program, so it does nothing.',fix:'Close the program that uses '+key+', or choose another key under "hotkeys" in settings.json. SanskritLearning takes the key back when it is free.'}:{area:'Hotkeys',ok:true,text:name+': '+key+'.'});
   }
  }
  // Dictation: the last time a dictation was put on the clipboard instead of being pasted, and why.
  const refusal=health?.lastRefusal;
  if(refusal){
-  const why={not_editable:'the focused element was not a text box Confab could confirm',not_armed:'no text box was confirmed for this dictation',focus_changed:'another window came to the front before pasting',
+  const why={not_editable:'the focused element was not a text box SanskritLearning could confirm',not_armed:'no text box was confirmed for this dictation',focus_changed:'another window came to the front before pasting',
    typing_active:'keys were being pressed at paste time',clipboard_changed:'another app changed the clipboard during the paste',text_unverified:'the paste could not be verified in the box',insertion_busy:'another paste was still running',
    desktop_unavailable:'the desktop was locked or unavailable'}[refusal.reason];
   const changed={window:'it was a different window',element:'focus was in a different element (or the box was recreated)',document:'it was a different page or tab',document_title:'the window or session title had changed (for example a new or switched session)'}[refusal.detail];

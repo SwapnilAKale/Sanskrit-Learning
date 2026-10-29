@@ -2005,6 +2005,180 @@
      "sha256": "8a77c0d397026208d22211f37670b5b3b11e03f190756b25a1d24041fced82a9"
     }
    ]
+  },
+  {
+   "name": "Su-śrotā Sanskrit ASR, ONNX int8",
+   "use": "Sanskrit dictation, src/sanskrit/asr.cjs (onnxruntime-node) via src/sanskrit/worker.cjs",
+   "path": "assets/models/sushrota-asr-onnx",
+   "version": "sushrota v13b (IndicConformer-CTC, Sanskrit token slice), ONNX int8 export at revision d320b7aada7f844b2c78d4f6c935aba77d0327a0",
+   "source": "https://huggingface.co/gnumanth/sushrota-sanskrit-asr-onnx",
+   "upstreamModel": "https://huggingface.co/prathoshap/sushrota-sanskrit-asr",
+   "license": "Apache-2.0 (ONNX export, as declared by gnumanth/sushrota-sanskrit-asr-onnx); the upstream model card asks users to observe the license of its base model, AI4Bharat IndicConformer (MIT)",
+   "totalBytes": 187643224,
+   "upstreamCheck": [
+    "2026-10-29: all 4 files downloaded from revision d320b7a of gnumanth/sushrota-sanskrit-asr-onnx (sizes match the Hugging Face listing); a round trip with known Sanskrit audio decodes exactly"
+   ],
+   "download": {
+    "base": "https://huggingface.co/gnumanth/sushrota-sanskrit-asr-onnx/resolve/d320b7aada7f844b2c78d4f6c935aba77d0327a0/"
+   },
+   "files": [
+    {
+     "path": "README.md",
+     "size": 3701,
+     "sha256": "6719c5a7c7257f00faf8c5ea7391517f72dd8e36c5360667438965f2ce1a0e6c"
+    },
+    {
+     "path": "preprocessor.onnx",
+     "size": 152338,
+     "sha256": "aab44917d3d894b2cfa84cffb8ac7ebe04c51540b3f3d565e6a7dc6e2630f859"
+    },
+    {
+     "path": "sanskrit_vocab.json",
+     "size": 2996,
+     "sha256": "be61d707852a6f8965f15a6cf160c00083e6bea03b6de8e474b9573fd7bb2719"
+    },
+    {
+     "path": "sushrota_sanskrit_ctc_int8.onnx",
+     "size": 187484189,
+     "sha256": "6a52c782ecbc3cfc389eac2832d069677c587b6693c2ca4e68ea7ad7d59f3e64"
+    }
+   ]
+  },
+  {
+   "name": "Indic Parler-TTS, ONNX fp16",
+   "use": "Sanskrit voice for replies (speaker Aryan), src/sanskrit/parler.cjs via src/sanskrit/worker.cjs",
+   "path": "assets/models/indic-parler-tts-onnx",
+   "version": "ai4bharat/indic-parler-tts, verbatim ONNX export (naklitechie/indic-parler-tts-ONNX revision d4598da15f7085dc41f697e26e2bc6e944bb1a22), fp16 graphs with fp32 I/O; description tokenizer from google/flan-t5-large revision 0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a",
+   "source": "https://huggingface.co/naklitechie/indic-parler-tts-ONNX",
+   "upstreamModel": "https://huggingface.co/ai4bharat/indic-parler-tts",
+   "license": "Apache-2.0 (Indic Parler-TTS and its ONNX export; flan-t5 tokenizer Apache-2.0)",
+   "totalBytes": 2395986333,
+   "upstreamCheck": [
+    "2026-10-29: sizes match the Hugging Face listings and every LFS file matches its listed SHA-256; both tokenizers match @huggingface/tokenizers token for token on 13 texts; two Sanskrit sentences round-trip through Su-śrotā without mistakes"
+   ],
+   "download": {
+    "base": "https://huggingface.co/naklitechie/indic-parler-tts-ONNX/resolve/d4598da15f7085dc41f697e26e2bc6e944bb1a22/",
+    "extra": {
+     "flan-t5-tokenizer/tokenizer.json": "https://huggingface.co/google/flan-t5-large/resolve/0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a/tokenizer.json",
+     "flan-t5-tokenizer/tokenizer_config.json": "https://huggingface.co/google/flan-t5-large/resolve/0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a/tokenizer_config.json",
+     "flan-t5-tokenizer/special_tokens_map.json": "https://huggingface.co/google/flan-t5-large/resolve/0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a/special_tokens_map.json"
+    }
+   },
+   "files": [
+    {
+     "path": "NOTICE.md",
+     "size": 1911,
+     "sha256": "86ad5d19790f16203616d32942eb1d2d2686813bbd30f9ab5ccf250012b4db8a"
+    },
+    {
+     "path": "config.json",
+     "size": 7338,
+     "sha256": "14b8b2352e854758fc2c6ad8bf72fb8330a8361cdcf79d7eb52a3f665e904cd2"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 223,
+     "sha256": "86d035c0fd9589d60fb763aad1feafeee2040fb9cf51515a0144816cec4d029d"
+    },
+    {
+     "path": "special_tokens_map.json",
+     "size": 552,
+     "sha256": "4859e5dbde90e059988a0a2136d8df3f2773d4d2fc4c4543690028f0b2166e7f"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 10272460,
+     "sha256": "8b5f3a5080f95e5333930b57181cd2a9bf387632bd7b277af5d4fea59acb58de"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 990,
+     "sha256": "47baa70cba964a32daa581a4af50b4f2c77edaa18bec2257660133ab204ca36f"
+    },
+    {
+     "path": "text_encoder_fp16.onnx",
+     "size": 2477904,
+     "sha256": "8ad2e2005e5246089ca7c053f616ac1eee34976f72028bc15ce171d39c10afe9"
+    },
+    {
+     "path": "text_encoder_fp16.onnx.data",
+     "size": 682462208,
+     "sha256": "88fd6c22d25e3d4110004797103f5245bb24fe422bb22420ecd04064b3403983"
+    },
+    {
+     "path": "decoder_model_fp16.onnx",
+     "size": 3422930,
+     "sha256": "af3eeab450dbb84eb8ca1d78ab4006222c9b00e63f63dd0b5cd1c87d78d9f3f4"
+    },
+    {
+     "path": "decoder_model_fp16.onnx.data",
+     "size": 1039902720,
+     "sha256": "b35d68816484da65dced7637b2231b4211be9a4f11ed575bbd31d023e8c777da"
+    },
+    {
+     "path": "decoder_with_past_model_fp16.onnx",
+     "size": 2312741,
+     "sha256": "e732f286771a4d99bc0f5073ec3ebfe899dcfb8446540c904d515c878c86e0b8"
+    },
+    {
+     "path": "decoder_with_past_model_fp16.onnx.data",
+     "size": 652695552,
+     "sha256": "cc50846744bf415c0991729c3daff9d318ddf14beb9caf97662034ebac1b16e5"
+    },
+    {
+     "path": "flan-t5-tokenizer/tokenizer.json",
+     "size": 2424064,
+     "sha256": "fe2ebbbbde2985be723e0ce18217853e4020c5e9d35bd07be2c27ab9d3ead57a"
+    },
+    {
+     "path": "flan-t5-tokenizer/tokenizer_config.json",
+     "size": 2539,
+     "sha256": "5d19985330a9123285cc583fc60616d083aa9df7435812b5d8bb3e749f435d56"
+    },
+    {
+     "path": "flan-t5-tokenizer/special_tokens_map.json",
+     "size": 2201,
+     "sha256": "5c87151ef0f72a99d1f766a4c418bd2a1f90aaa30a8e22fe5eca9641daebb64f"
+    }
+   ]
+  },
+  {
+   "name": "DAC 44.1 kHz codec decoder, ONNX fp16",
+   "use": "turns Indic Parler-TTS codes into audio, src/sanskrit/parler.cjs",
+   "path": "assets/models/dac-44khz-onnx",
+   "version": "descript/dac 44 kHz decoder, onnx-community/dac_44khz-ONNX revision c831ed0363c5e97ab0026399fe0ecb01f7a392bd (onnx/decoder_model_fp16.onnx)",
+   "source": "https://huggingface.co/onnx-community/dac_44khz-ONNX",
+   "upstreamModel": "https://github.com/descriptinc/descript-audio-codec",
+   "license": "MIT (descript-audio-codec); the ONNX export states no separate licence",
+   "totalBytes": 108599472,
+   "download": {
+    "base": "https://huggingface.co/onnx-community/dac_44khz-ONNX/resolve/c831ed0363c5e97ab0026399fe0ecb01f7a392bd/",
+    "extra": {
+     "decoder_model_fp16.onnx": "https://huggingface.co/onnx-community/dac_44khz-ONNX/resolve/c831ed0363c5e97ab0026399fe0ecb01f7a392bd/onnx/decoder_model_fp16.onnx"
+    }
+   },
+   "files": [
+    {
+     "path": "README.md",
+     "size": 2467,
+     "sha256": "f72c87f5daebf755e676ea003a7f489e6a2b86cb10ec5e5df522edb959193e72"
+    },
+    {
+     "path": "config.json",
+     "size": 622,
+     "sha256": "4011e25613f5ae6769073366dd76ab22d0b18415f0f9202742f3ad905f2924f2"
+    },
+    {
+     "path": "preprocessor_config.json",
+     "size": 206,
+     "sha256": "c7d295758ce5777d6d88fef1996e94adc8ef3e2237ddfc5ecc24d1407aaddd7d"
+    },
+    {
+     "path": "decoder_model_fp16.onnx",
+     "size": 108596177,
+     "sha256": "85d1abc75e8049f24b75ef90296252371afcffcd9df72a7db837c66b1d9ad95d"
+    }
+   ]
   }
  ],
  "retired": [

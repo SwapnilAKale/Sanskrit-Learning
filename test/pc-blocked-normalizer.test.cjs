@@ -25,7 +25,7 @@ test('PC engine factory: pronunciation is the Node normaliser, so no Python ever
  // Even with a NeMo command configured, the PC engine never runs it.
  const code=`require('fs').appendFileSync(${JSON.stringify(log)},'x')`;
  // Speech settings come from the profile's settings.json.
- fs.writeFileSync(path.join(root,'settings.json'),JSON.stringify({speech:{ttsThreads:2,normalizer:{command:process.execPath,args:['-e',code,'--']}}}));
+ fs.writeFileSync(path.join(root,'settings.json'),JSON.stringify({language:'en',speech:{ttsThreads:2,normalizer:{command:process.execPath,args:['-e',code,'--']}}}));
  const e=factory.makeEngine(root,{profile:root});assert.equal(e.ttsThreads,2,'profile speech settings apply');e.worker=async()=>({send(){}});e.synthesizer={warmup:async()=>{},synthesize:async text=>[text],close(){}};t.after(()=>e.close());
  assert.ok(e.normalizer instanceof NodeNormalizer);await e.warmup();
  assert.deepEqual(await e.synthesize('It costs $12.50 for 20 kg.'),['It costs twelve dollars fifty cents for twenty kilograms.']);
@@ -46,12 +46,12 @@ test('a failed press shows its reason on the badge and in the notification, not 
  Object.assign(input,{ready:Promise.resolve({}),request:async()=>{},close(){},api:{setClipboard(){}},insert:async()=>({status:'inserted'})});
  const audio=new EventEmitter();for(const name of ['loadingCue','disarmCue','tick','errorCue'])audio[name]=async()=>{};
  Object.assign(audio,{cue:async()=>{},start(){},stop(){},stopPlayback(){},close:async()=>{}});
- const eng=new EventEmitter();Object.assign(eng,{state:'unloaded',start:async(id,emit)=>{setTimeout(()=>emit({type:'error',message:'Speech models could not load: Local asr-manual worker exited. Restart Confab.'}),5);},audio(){},end(){},cancel(){},close(){}});
+ const eng=new EventEmitter();Object.assign(eng,{state:'unloaded',start:async(id,emit)=>{setTimeout(()=>emit({type:'error',message:'Speech models could not load: Local asr-manual worker exited. Restart SanskritLearning.'}),5);},audio(){},end(){},cancel(){},close(){}});
  const c=new PcController({engine:eng,audio,input,lazy:true,notify:{failure:m=>{notices.push(m);return true;},badge:b=>badges.push(b),close:async()=>{}},saveDraft(){},clearDraft(){}});t.after(()=>c.close());
  await c.ready();input.emit('capture',{action:'start'});await c.actions;await wait(30);
  const failed=badges.findLast(b=>b.name==='failed');
  assert.deepEqual(failed,{name:'failed',reason:'Speech models could not load: Local asr-manual worker exited'});
  assert.equal(describe(failed).label,'✕ Failed — Speech models could not load: Local asr-manual worker exited');
- assert.match(notices.at(-1),/^Speech models could not load: Local asr-manual worker exited\. Restart Confab\.$/);
+ assert.match(notices.at(-1),/^Speech models could not load: Local asr-manual worker exited\. Restart SanskritLearning\.$/);
  assert.equal(describe({name:'failed'}).label,'✕ Failed');
 });

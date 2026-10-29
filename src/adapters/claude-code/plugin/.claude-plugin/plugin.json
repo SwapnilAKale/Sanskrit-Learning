@@ -1,5 +1,5 @@
 {
-  "name": "confab",
+  "name": "sanskrit_learning",
   "version": "0.8.0",
-  "description": "Confab read-aloud hooks for Claude Code."
+  "description": "SanskritLearning read-aloud hooks for Claude Code."
 }

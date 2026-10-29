@@ -64,12 +64,12 @@ function describe(state) {
 class Badge {
  constructor() {
   this.instance = fn.module(null);
-  this.className = 'ConfabBadge-' + process.pid + '-' + require('node:crypto').randomUUID();
+  this.className = 'SanskritLearningBadge-' + process.pid + '-' + require('node:crypto').randomUUID();
   const defaultProc = fn.proc(fn.module('user32.dll'), 'DefWindowProcW');
   this.atom = fn.register({size:k.sizeof(windowClass), style:0, proc:defaultProc, classExtra:0, windowExtra:0, instance:this.instance, icon:null, cursor:null, background:null, menu:null, name:this.className, smallIcon:null});
-  if (!this.atom) throw Error('Could not register the Confab badge window.');
-  this.window = fn.create(EX_STYLE, this.className, 'Confab status', WS_POPUP, 0, 0, 1, 1, null, null, this.instance, null);
-  if (!this.window) { fn.unregister(this.className, this.instance); throw Error('Could not create the Confab badge.'); }
+  if (!this.atom) throw Error('Could not register the SanskritLearning badge window.');
+  this.window = fn.create(EX_STYLE, this.className, 'SanskritLearning status', WS_POPUP, 0, 0, 1, 1, null, null, this.instance, null);
+  if (!this.window) { fn.unregister(this.className, this.instance); throw Error('Could not create the SanskritLearning badge.'); }
   this.enabled = true; this.visible = false; this.state = null; this.drawn = null; this.at = {x:NaN, y:NaN};
  }
  set(state) { this.state = state; this.refresh(); }

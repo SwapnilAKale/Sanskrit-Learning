@@ -15,12 +15,12 @@ try {
     if ($state -eq 'uninstalling') { exit 0 }
     if ($state -eq 'installing') {
         Add-Type -AssemblyName System.Windows.Forms
-        [void][System.Windows.Forms.MessageBox]::Show("Confab setup did not finish, so Confab was not started.`r`n`r`nRun setup again to complete it: open PowerShell in the Confab folder you downloaded and run .\setup.cmd, or run:`r`n" + (Join-Path (Split-Path -Parent $PSScriptRoot) 'app\setup.cmd'), 'Confab', 'OK', 'Warning')
+        [void][System.Windows.Forms.MessageBox]::Show("SanskritLearning setup did not finish, so SanskritLearning was not started.`r`n`r`nRun setup again to complete it: open PowerShell in the SanskritLearning folder you downloaded and run .\setup.cmd, or run:`r`n" + (Join-Path (Split-Path -Parent $PSScriptRoot) 'app\setup.cmd'), 'SanskritLearning', 'OK', 'Warning')
         exit 0
     }
     $install = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'install.json') -Raw | ConvertFrom-Json
     $entry = Join-Path $install.root 'src\pc\resident.cjs'
-    if (-not (Test-Path -LiteralPath $entry)) { throw 'Confab project was moved. Run install-resident.ps1 from its new location.' }
+    if (-not (Test-Path -LiteralPath $entry)) { throw 'SanskritLearning project was moved. Run install-resident.ps1 from its new location.' }
     # Node's native named mutex also prevents duplicate tray processes and model loads.
     Start-Process -FilePath $install.node -ArgumentList @(('"' + $entry + '"'),('"' + $install.root + '"'),('"' + $PSScriptRoot + '"')) -WorkingDirectory $install.root -WindowStyle Hidden -RedirectStandardOutput (Join-Path $PSScriptRoot 'resident.log') -RedirectStandardError (Join-Path $PSScriptRoot 'resident-error.log')
 } catch {

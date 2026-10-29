@@ -1,5 +1,5 @@
 'use strict';
-// Speech benchmark: word error rate and timing of Confab's own dictation and read-aloud paths, the talk-back
+// Speech benchmark: word error rate and timing of SanskritLearning's own dictation and read-aloud paths, the talk-back
 // match margin and, with --mic, the microphone open time. It runs PcController with the engine the service
 // builds (LazySpeechEngine over engine-factory.cjs, built-in speech settings, default spoken limits). Only the
 // microphone, the speakers and the paste are stand-ins: clips are fed at real-time pace in 20 ms frames, and a
@@ -11,7 +11,7 @@
 //                it does not measure accuracy on human speech.
 //   --mic        open the default microphone 5 times on a worker thread (as the service does) and 5 times on
 //                the main thread, timing the open and the longest main-thread stall.
-// Quit or pause the installed Confab first: it shares the CPU and the microphone.
+// Quit or pause the installed SanskritLearning first: it shares the CPU and the microphone.
 // Results: the console, and test-output/benchmark/<time>.json with the PC, the models and every clip.
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),{EventEmitter}=require('node:events');
 const {performance}=require('node:perf_hooks');
@@ -81,7 +81,7 @@ function reportDictation(label,results){
  for(const r of results)line('  '+r.name.padEnd(16)+' '+(r.wordErrors+'/'+r.referenceWords).padStart(6)+' errors  text '+ms(r.textReadyMs).padStart(8)+'  "'+r.text+'"');
  line('  Word error rate: '+pct(s.wer)+' ('+s.wordErrors+' errors in '+s.referenceWords+' words); without um/uh: '+pct(s.werWithoutFillers));
  line('  Stop press to text ready: median '+ms(ready?.median)+', 90th percentile '+ms(ready?.p90)+', max '+ms(ready?.max));
- line('  Stop press to paste: median '+ms(paste?.median)+', max '+ms(paste?.max)+' (Confab waits at least 800 ms before pasting)');
+ line('  Stop press to paste: median '+ms(paste?.median)+', max '+ms(paste?.max)+' (SanskritLearning waits at least 800 ms before pasting)');
  return {...s,textReadyMs:ready,pasteMs:paste,clips:results.map(({samples,...r})=>r)};
 }
 
@@ -107,15 +107,15 @@ async function cpuBusy(){const sample=()=>os.cpus().reduce((a,c)=>{const t=Objec
 (async()=>{
  const machine={cpu:os.cpus()[0]?.model.trim(),logicalCores:os.cpus().length,memoryGB:Math.round(os.totalmem()/2**30),windows:os.release(),node:process.version,busyBeforeStart:await cpuBusy()};
  const result={at:new Date().toISOString(),machine,models:{dictation:require('../src/recognition-engine.cjs').info.name,speech:'Kokoro multi-lang v1.0, speaker 3, 6 threads',detector:'Silero VAD'}};
- line('Confab speech benchmark on '+machine.cpu+' ('+machine.logicalCores+' threads, '+machine.memoryGB+' GB), Node '+machine.node);
+ line('SanskritLearning speech benchmark on '+machine.cpu+' ('+machine.logicalCores+' threads, '+machine.memoryGB+' GB), Node '+machine.node);
  line('CPU busy before start: '+pct(machine.busyBeforeStart)+(machine.busyBeforeStart>.15?'. WARNING: other programs are using the CPU, so the timings below are slower than normal. Close them, plug in the charger and run again.':''));
  const {input,audio}=standIns();
  const engine=new LazySpeechEngine(()=>makeEngine(ROOT),{idleMs:3600000});
- const c=new PcController({engine,audio,input,notify:{failure:m=>line('  [Confab] '+m),close(){}},lazy:true,saveDraft(){},clearDraft(){},spoken:{sentences:3,chars:400,dateOrder:'dmy'}});
+ const c=new PcController({engine,audio,input,notify:{failure:m=>line('  [SanskritLearning] '+m),close(){}},lazy:true,saveDraft(){},clearDraft(){},spoken:{sentences:3,chars:400,dateOrder:'dmy'}});
  const finish=c.finish.bind(c);c.finish=capture=>{c.onFinish?.();return finish(capture);};
  await c.ready();
  let t=performance.now();await engine.warmup();result.modelLoadMs=performance.now()-t;
- line('Models loaded in '+ms(result.modelLoadMs)+' (the first use after Confab unloads idle models includes this)');
+ line('Models loaded in '+ms(result.modelLoadMs)+' (the first use after SanskritLearning unloads idle models includes this)');
 
  const human=clipsFrom(dir);
  if(human.length){const runs=[];for(const clip of human)runs.push({...clip,...await dictate(c,input,audio,clip.samples)});result.dictation=reportDictation('Dictation: '+path.relative(ROOT,dir),runs);}

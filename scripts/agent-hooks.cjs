@@ -1,7 +1,7 @@
 'use strict';
-// Install or remove Confab's read-aloud hook for one agent harness.
+// Install or remove SanskritLearning's read-aloud hook for one agent harness.
 //   node scripts/agent-hooks.cjs install|uninstall|status <harness|all> [--dry-run]
-// Harnesses: claude-code, codex, cursor, antigravity, gemini, windsurf, cline, continue, goose. Only Confab's
+// Harnesses: claude-code, codex, cursor, antigravity, gemini, windsurf, cline, continue, goose. Only SanskritLearning's
 // own entries are touched; uninstall returns each file to its pre-install state (see docs/DEVELOPER_GUIDE.md).
 const path=require('node:path'),{spawnSync}=require('node:child_process');
 const hooks=require('../src/adapters/hooks/install.cjs'),{loadMapping}=require('../src/adapters/hooks/adapter.cjs');
@@ -11,7 +11,7 @@ function fail(message){console.error(message);process.exit(1);}
 if(!['install','uninstall','status'].includes(action)||!(HARNESSES.includes(target)||target==='all'&&action!=='install'))fail('Usage: node scripts/agent-hooks.cjs install|uninstall|status <'+HARNESSES.join('|')+'> [--dry-run]; uninstall and status also take "all".');
 let failed=false;
 function claude(harness,plugin){
- // Claude Code reads hooks from the Confab plugin, registered through its local marketplace.
+ // Claude Code reads hooks from the SanskritLearning plugin, registered through its local marketplace.
  const id=plugin.name+'@'+plugin.marketplace,root=path.resolve(__dirname,'..');
  if(action==='install'&&!dryRun)require('../src/setup/agents.cjs').stampClaudeHooks(root);
  const steps=action==='install'?[['plugin','marketplace','add',path.join(root,plugin.path)],['plugin','install',id]]:action==='uninstall'?[['plugin','uninstall',id],['plugin','marketplace','remove',plugin.marketplace]]:[['plugin','list']];
@@ -35,8 +35,8 @@ function run(harness){
  if(action==='install'){
   if(r.support?.binary)console.log((r.support.verified?'Hook support found in ':'Found (hook support could not be checked): ')+r.support.binary);
   console.log(verb+' '+r.file+(r.created?' (new file)':'')+':');
-  if(r.replaced.length)console.log('  replaced the previous Confab entry in: '+r.replaced.join(', '));
-  console.log('  added a Confab hook to: '+r.added.join(', '));
+  if(r.replaced.length)console.log('  replaced the previous SanskritLearning entry in: '+r.replaced.join(', '));
+  console.log('  added a SanskritLearning hook to: '+r.added.join(', '));
   console.log('  command: '+hooks.command(harness,Object.keys(loadMapping(harness).install.events)[0]));
   if(r.backup&&!dryRun)console.log('  original file kept as '+r.backup);
   if(dryRun)console.log(JSON.stringify(r.config,null,2));
@@ -44,8 +44,8 @@ function run(harness){
   return;
  }
  if(r.missing){console.log(harness+': '+r.file+' does not exist. Nothing to remove.');}
- else if(!r.removed.length&&!r.deleted)console.log(harness+': no Confab entries in '+r.file+'. Nothing changed.');
- else console.log(harness+': '+(r.deleted?(dryRun?'would delete ':'deleted ')+r.file+' (created by Confab)':verb+' '+r.file+': removed the Confab hook from '+r.removed.join(', ')+(r.matchesOriginal?'; it matches its pre-install backup':'; WARNING: it does not match its pre-install backup, which was kept')));
+ else if(!r.removed.length&&!r.deleted)console.log(harness+': no SanskritLearning entries in '+r.file+'. Nothing changed.');
+ else console.log(harness+': '+(r.deleted?(dryRun?'would delete ':'deleted ')+r.file+' (created by SanskritLearning)':verb+' '+r.file+': removed the SanskritLearning hook from '+r.removed.join(', ')+(r.matchesOriginal?'; it matches its pre-install backup':'; WARNING: it does not match its pre-install backup, which was kept')));
  for(const line of r.trust||[])console.log('  removed from Codex config.toml: '+line);
  if(r.removed?.length&&!r.deleted&&!r.matchesOriginal)failed=true;
 }

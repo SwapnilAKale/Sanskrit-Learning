@@ -1,19 +1,19 @@
 'use strict';
 // Launcher for all three Claude Code hooks (UserPromptSubmit, Stop, SessionEnd), started by Node directly.
-// Claude runs it from its plugin cache, so it first finds the Confab folder, then hands stdin to hook.cjs.
+// Claude runs it from its plugin cache, so it first finds the SanskritLearning folder, then hands stdin to hook.cjs.
 // Always exits 0 and prints nothing: a hook must never delay or break Claude.
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 function isVoiceRoot(root){return !!root&&['src/adapters/claude-code/hook.cjs','src/adapters/hooks/adapter.cjs','src/pc/resident.cjs'].every(file=>fs.existsSync(path.join(root,file)));}
 function marketplaceRoot(){
  try{
   const config=process.env.CLAUDE_CONFIG_DIR||path.join(os.homedir(),'.claude');
-  const source=JSON.parse(fs.readFileSync(path.join(config,'plugins','known_marketplaces.json'),'utf8'))['confab-local']?.source;
+  const source=JSON.parse(fs.readFileSync(path.join(config,'plugins','known_marketplaces.json'),'utf8'))['sanskrit_learning-local']?.source;
   if(source?.source!=='directory'||!source.path||!path.isAbsolute(source.path))return null;
   const candidate=path.resolve(source.path,'..','..','..');return isVoiceRoot(candidate)?candidate:null;
  }catch{return null;}
 }
 function resolveRoot(){
- if(process.env.CONFAB_INSTALL_ROOT)return process.env.CONFAB_INSTALL_ROOT;
+ if(process.env.SANSKRIT_LEARNING_INSTALL_ROOT)return process.env.SANSKRIT_LEARNING_INSTALL_ROOT;
  const relative=path.resolve(__dirname,'..','..','..','..');if(isVoiceRoot(relative))return relative;
  return marketplaceRoot();
 }

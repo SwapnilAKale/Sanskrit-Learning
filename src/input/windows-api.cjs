@@ -38,7 +38,7 @@ function createWindowsApi(){
   const unlock=kernel.func('int __stdcall GlobalUnlock(void *memory)');
   const free=kernel.func('void * __stdcall GlobalFree(void *memory)');
   // Message-only built-in STATIC window: clipboard owner, never visible.
-  const window=createWindow(0,'STATIC','Confab clipboard owner',0,0,0,0,0,-3n,null,null,null);
+  const window=createWindow(0,'STATIC','SanskritLearning clipboard owner',0,0,0,0,0,-3n,null,null,null);
   if(!window)throw Error('Could not create clipboard owner.');
   let closed=false;const registrations=[];
   function put(format,bytes){

@@ -1,16 +1,16 @@
-"""Confab read-aloud client for Python agents.
+"""SanskritLearning read-aloud client for Python agents.
 
 Self-contained and dependency-free (standard library only, Python 3.8+). Copy this
 file into an agent repository. The contract is documented in
-docs/CUSTOM_AGENTS_REFERENCE.md of the Confab project.
+docs/CUSTOM_AGENTS_REFERENCE.md of the SanskritLearning project.
 
-    from confab import turn, speak
+    from sanskrit_learning import turn, speak
     t = turn(user_message, agent="my-agent", session_id=conversation_id)   # when the message arrives
     ...                                                                     # run the agent
     speak(final_answer, agent="my-agent", session_id=conversation_id, turn_id=t["turnId"])
 
 The service speaks the reply only if that user message was sent with talk-back dictation
-(there is no mode that speaks every reply). turn() and speak() never raise, never starts Confab, and never waits for speech. It
+(there is no mode that speaks every reply). turn() and speak() never raise, never starts SanskritLearning, and never waits for speech. It
 returns {"accepted": False, "reason": "unavailable"} when the service is not
 running or does not answer within the timeout.
 """
@@ -28,7 +28,7 @@ DEFAULT_TIMEOUT = 0.25  # seconds; socket timeout for the connect and each read
 
 def profile_dir() -> str:
     base = os.environ.get("LOCALAPPDATA") or os.path.join(os.path.expanduser("~"), "AppData", "Local")
-    return os.path.join(base, "Confab", "resident")
+    return os.path.join(base, "SanskritLearning", "resident")
 
 
 def connection(profile: str | None = None) -> dict | None:
@@ -119,6 +119,6 @@ def status(*, profile: str | None = None, timeout: float = DEFAULT_TIMEOUT) -> d
     return value if value.pop("status", None) == 200 else None
 
 
-if __name__ == "__main__":  # python confab.py "Sentence to speak"
+if __name__ == "__main__":  # python sanskrit_learning.py "Sentence to speak"
     import sys
-    print(json.dumps(speak(" ".join(sys.argv[1:]) or "Confab test.", agent="confab-cli")))
+    print(json.dumps(speak(" ".join(sys.argv[1:]) or "SanskritLearning test.", agent="sanskrit_learning-cli")))

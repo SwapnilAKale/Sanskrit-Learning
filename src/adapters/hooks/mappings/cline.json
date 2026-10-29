@@ -43,9 +43,9 @@
       "needs": "hooks"
     },
     "files": {
-      "~/Documents/Cline/Hooks/UserPromptSubmit.ps1": "# Confab read-aloud hook (adapters/hooks/adapter.cjs). Installed and removed by: node scripts/agent-hooks.cjs install|uninstall cline\r\n# node reads the payload from this script's stdin directly.\r\n{{command:UserPromptSubmit}}\r\nexit 0\r\n",
-      "~/Documents/Cline/Hooks/TaskComplete.ps1": "# Confab read-aloud hook (adapters/hooks/adapter.cjs). Installed and removed by: node scripts/agent-hooks.cjs install|uninstall cline\r\n# node reads the payload from this script's stdin directly.\r\n{{command:TaskComplete}}\r\nexit 0\r\n",
-      "~/Documents/Cline/Hooks/TaskCancel.ps1": "# Confab read-aloud hook (adapters/hooks/adapter.cjs). Installed and removed by: node scripts/agent-hooks.cjs install|uninstall cline\r\n# node reads the payload from this script's stdin directly.\r\n{{command:TaskCancel}}\r\nexit 0\r\n"
+      "~/Documents/Cline/Hooks/UserPromptSubmit.ps1": "# SanskritLearning read-aloud hook (adapters/hooks/adapter.cjs). Installed and removed by: node scripts/agent-hooks.cjs install|uninstall cline\r\n# node reads the payload from this script's stdin directly.\r\n{{command:UserPromptSubmit}}\r\nexit 0\r\n",
+      "~/Documents/Cline/Hooks/TaskComplete.ps1": "# SanskritLearning read-aloud hook (adapters/hooks/adapter.cjs). Installed and removed by: node scripts/agent-hooks.cjs install|uninstall cline\r\n# node reads the payload from this script's stdin directly.\r\n{{command:TaskComplete}}\r\nexit 0\r\n",
+      "~/Documents/Cline/Hooks/TaskCancel.ps1": "# SanskritLearning read-aloud hook (adapters/hooks/adapter.cjs). Installed and removed by: node scripts/agent-hooks.cjs install|uninstall cline\r\n# node reads the payload from this script's stdin directly.\r\n{{command:TaskCancel}}\r\nexit 0\r\n"
     },
     "events": {
       "UserPromptSubmit": {},

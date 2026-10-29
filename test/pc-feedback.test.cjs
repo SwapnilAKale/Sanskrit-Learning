@@ -11,10 +11,10 @@ test('immediate input: start is emitted before the slow focus check, either key 
  const events=[];input.on('capture',e=>events.push(['capture',e]));input.on('arm',e=>events.push(['arm',e.background,e.result.status]));
  const before=Date.now();await input.hotkey(4);assert.ok(Date.now()-before<50,'no wait for UI Automation');
  assert.deepEqual(events,[['capture',{action:'start',talkback:true}]]);
- await input.hotkey(2);assert.deepEqual(events.at(-1),['capture',{action:'end'}],'Ctrl+Shift+8 stops a talk-back recording');
+ await input.hotkey(2);assert.deepEqual(events.at(-1),['capture',{action:'end'}],'Ctrl+Shift+I stops a talk-back recording');
  await input.armed;assert.deepEqual(events.find(e=>e[0]==='arm'),['arm',true,'armed']);
  await input.hotkey(2);assert.deepEqual(events.at(-1),['capture',{action:'start',talkback:false}]);
- await input.hotkey(4);assert.deepEqual(events.at(-1),['capture',{action:'end'}],'Ctrl+Shift+7 stops a plain recording');
+ await input.hotkey(4);assert.deepEqual(events.at(-1),['capture',{action:'end'}],'Ctrl+Shift+U stops a plain recording');
 });
 test('immediate input: Disarm reports whether a recording was cancelled; a press during paste is reported, not dropped',async t=>{
  const input=new WindowsTextInput({api:slowApi(),accessibility:slowAccessibility(0),talkback:true,immediate:true,shortcuts:false});t.after(()=>input.close());await input.ready;
